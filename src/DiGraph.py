@@ -1,6 +1,15 @@
 from GraphInterface import GraphInterface
 
 
+class EdgeData(object):
+    def __init__(self, src: int, dest: int, tag: int, info: str, weight: int):
+        self.src = src
+        self.dest = dest
+        self.tag = tag
+        self.info = info
+        self.weight = weight
+
+
 class GeoLocation(object):
     def __init__(self, location=None):
         self.location = location
@@ -17,7 +26,7 @@ class GeoLocation(object):
 
 
 class NodeData(object):
-    def __init__(self, key: int, tag=0, info="", location=None, weight=1):
+    def __init__(self, key: int, tag=0, info="", location=None, weight=0):
         self.key = key
         self.tag = tag
         self.info = info
@@ -26,6 +35,9 @@ class NodeData(object):
             self.location = GeoLocation(location)
         else:
             self.location = None
+
+    def __repr__(self):
+        return "#{}".format(self.key)
 
 
 class DiGraph(GraphInterface):
@@ -97,8 +109,9 @@ class DiGraph(GraphInterface):
             return False  # If edge (src,dest) did not exist before, increment edgeSize.
         self.sizeE += 1
         self.sizeMc += 1
-        self.inEdges[id2][id1] = weight
-        self.outEdges[id1][id2] = weight
+        edge = EdgeData.__init__(self, id1, id2, 0, f"{id1}-->{id2}", weight)
+        self.inEdges[id2][id1] = edge
+        self.outEdges[id1][id2] = edge
         return True
 
     def add_node(self, node_id: int, pos: tuple = None) -> bool:
@@ -159,3 +172,39 @@ class DiGraph(GraphInterface):
                 self.sizeE -= 1
                 return True
         return False
+
+    def __repr__(self):
+        s = "Graph info:\n|V|={} , |E|={} , MC={}\n".format(self.sizeV, self.sizeE, self.sizeMc)
+        for key in self.nodes.keys():
+            s += "{} --> in [".format(self.nodes[key])
+            for w in self.all_in_edges_of_node(key).keys():
+                s += "{}({})".format(str(w), self.inEdges[key][w])
+                s += " ,"
+            s = s[:-1]
+            s = s[:-1]
+            s += "]\n"
+            s += "{} --> Out [".format(self.nodes[key])
+            for w in self.all_out_edges_of_node(key).keys():
+                s += "{}({})".format(str(w), self.outEdges[key][w])
+                s += " ,"
+            s = s[:-1]
+            s = s[:-1]
+            s += "]\n"
+        return s
+
+
+if __name__ == '__main__':
+    g = DiGraph()  # creates an empty directed graph
+    for n in range(4):
+        g.add_node(n)
+    g.add_edge(0, 1, 1)
+    g.add_edge(1, 0, 1.1)
+    g.add_edge(1, 2, 1.3)
+    g.add_edge(2, 3, 1.1)
+    g.add_edge(1, 3, 1.9)
+    g.remove_edge(1, 3)
+    g.add_edge(1, 3, 1.8)
+    print(g)  # prints the __repr__ (func output)
+    print(g.get_all_v())  # prints a dict with all the graph's vertices.
+    print(g.all_in_edges_of_node(1))
+    print(g.all_out_edges_of_node(1))
