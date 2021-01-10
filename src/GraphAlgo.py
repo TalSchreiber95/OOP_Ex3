@@ -1,16 +1,22 @@
+import json
 from typing import List
 
 from GraphAlgoInterface import GraphAlgoInterface
+from src.DiGraph import DiGraph
 from src.GraphInterface import GraphInterface
 
 
 class GraphAlgo(GraphAlgoInterface):
     """This abstract class represents an interface of a graph."""
 
+    def __init__(self):
+        self._graphAlgo = DiGraph()
+
     def get_graph(self) -> GraphInterface:
         """
         :return: the directed graph on which the algorithm works on.
         """
+        return self._graphAlgo
 
     def load_from_json(self, file_name: str) -> bool:
         """
@@ -18,7 +24,29 @@ class GraphAlgo(GraphAlgoInterface):
         @param file_name: The path to the json file
         @returns True if the loading was successful, False o.w.
         """
-        pass
+        flag = True
+        try:
+            with open(file_name) as file:
+                load = json.load(file)
+                graphJson = DiGraph()
+            for node in load["Nodes"]:
+                if "pos" in node:
+                    posJ = tuple(map(float, str(node["pos"]).split(",")))
+                    graphJson.add_node(node_id=node["id"], pos=posJ)
+                else:
+                    graphJson.add_node(node_id=node["id"])
+
+            for edge in load["Edges"]:
+                graphJson.add_edge(id1=edge["src"], id2=edge["dest"], weight=edge["w"])
+            self._graphAlgo = graphJson
+            print("load successes")
+        except Exception as e:
+            print(e)
+            print("load failed")
+            flag = False
+        finally:
+            file.close()
+            return flag
 
     def save_to_json(self, file_name: str) -> bool:
         """
@@ -26,7 +54,29 @@ class GraphAlgo(GraphAlgoInterface):
         @param file_name: The path to the out file
         @return: True if the save was successful, False o.w.
         """
-        pass
+        flag = True
+        with open(file_name) as jsonFile:
+            try:
+                d = {"Nodes": [], "Edges": []}
+                for src in self._graphAlgo.outEdges.keys():
+                    for dst, w in self._graphAlgo.all_out_edges_of_node(src).items():
+                        d["Edges"].append({"src": src, "w": w, "dest": dst})
+
+                for node in self._graphAlgo.nodes.values():
+                    if node.location is None:
+                        d["Nodes"].append({"id": node.node_id})
+                    else:
+                        d["Nodes"].append({"pos": str(node.location), "id": node.node_id})
+                jsonFile.write(d.__repr__())
+                print("Save Json was succeeded ")
+                flag = True
+            except Exception as e:
+                print("Save Json was failed ")
+                print(e)
+                flag = False
+            finally:
+                jsonFile.close()
+                return flag
 
     def shortest_path(self, id1: int, id2: int) -> (float, list):
         """
@@ -84,3 +134,19 @@ class GraphAlgo(GraphAlgoInterface):
         @return: None
         """
         pass
+
+    def __repr__(self):
+        return self._graphAlgo.__repr__()
+
+
+if __name__ == '__main__':
+    file = 'A5.txt'
+    g1 = GraphAlgo()
+    g2 = GraphAlgo.load_from_json(g1, file_name=file)
+    print("\n\n\n\ngraph algo is\n\n")
+    print(f"Graph load check:{g2} \n\n")
+    print(g1.get_graph().__repr__())
+    g1.get_graph().remove_node(1)
+    print(g1.get_graph().__repr__())
+    # print(g1.save_to_json("TalTest")) should be fix
+

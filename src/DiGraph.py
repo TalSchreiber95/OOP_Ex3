@@ -2,12 +2,15 @@ from GraphInterface import GraphInterface
 
 
 class EdgeData(object):
-    def __init__(self, src: int, dest: int, tag: int, info: str, weight: int):
+    def __init__(self, src: int, dest: int, tag: int, info: str, weight: int = 5):
         self.src = src
         self.dest = dest
         self.tag = tag
         self.info = info
         self.weight = weight
+
+    def getWeight(self) -> float:
+        return self.weight
 
 
 class GeoLocation(object):
@@ -26,7 +29,7 @@ class GeoLocation(object):
 
 
 class NodeData(object):
-    def __init__(self, key: int, tag=0, info="", location=None, weight=0):
+    def __init__(self, key: int, tag=0, info="", location: tuple = None, weight=0):
         self.key = key
         self.tag = tag
         self.info = info
@@ -109,7 +112,7 @@ class DiGraph(GraphInterface):
             return False  # If edge (src,dest) did not exist before, increment edgeSize.
         self.sizeE += 1
         self.sizeMc += 1
-        edge = EdgeData.__init__(self, id1, id2, 0, f"{id1}-->{id2}", weight)
+        edge = EdgeData.__init__(self, src=id1, dest=id2, tag=0, info=f"{id1}-->{id2}", weight=weight)
         self.inEdges[id2][id1] = edge
         self.outEdges[id1][id2] = edge
         return True
@@ -148,7 +151,7 @@ class DiGraph(GraphInterface):
                 del self.outEdges[i][node_id]
         for j in self.inEdges.keys():
             if node_id in self.inEdges[j].keys():
-                del self.outEdges[j][node_id]
+                del self.inEdges[j][node_id]
         self.outEdges.pop(node_id)
         self.inEdges.pop(node_id)
         self.nodes.pop(node_id)
@@ -175,35 +178,42 @@ class DiGraph(GraphInterface):
 
     def __repr__(self):
         s = "Graph info:\n|V|={} , |E|={} , MC={}\n".format(self.sizeV, self.sizeE, self.sizeMc)
+
         for key in self.nodes.keys():
             s += "{} --> in [".format(self.nodes[key])
+            n = 0
             for w in self.all_in_edges_of_node(key).keys():
                 s += "{}({})".format(str(w), self.inEdges[key][w])
                 s += " ,"
-            s = s[:-1]
-            s = s[:-1]
+                n += 1
+            if n > 0:
+                s = s[:-1]
+                s = s[:-1]
             s += "]\n"
             s += "{} --> Out [".format(self.nodes[key])
+            n = 0
             for w in self.all_out_edges_of_node(key).keys():
                 s += "{}({})".format(str(w), self.outEdges[key][w])
                 s += " ,"
-            s = s[:-1]
-            s = s[:-1]
+                n += 1
+            if n > 0:
+                s = s[:-1]
+                s = s[:-1]
             s += "]\n"
         return s
 
 
 if __name__ == '__main__':
     g = DiGraph()  # creates an empty directed graph
-    for n in range(4):
+    for n in range(5):
         g.add_node(n)
-    g.add_edge(0, 1, 1)
-    g.add_edge(1, 0, 1.1)
-    g.add_edge(1, 2, 1.3)
-    g.add_edge(2, 3, 1.1)
-    g.add_edge(1, 3, 1.9)
-    g.remove_edge(1, 3)
-    g.add_edge(1, 3, 1.8)
+    g.add_edge(0, 3, 2)
+    g.add_edge(1, 0, 2.1)
+    g.add_edge(3, 2, 1.4)
+    g.add_edge(1, 5, 1.1)
+    g.add_edge(3, 4, 1.9)
+    g.remove_edge(0, 3)
+    g.add_edge(0, 3, 1.2)
     print(g)  # prints the __repr__ (func output)
     print(g.get_all_v())  # prints a dict with all the graph's vertices.
     print(g.all_in_edges_of_node(1))
