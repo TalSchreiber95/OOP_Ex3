@@ -26,12 +26,18 @@ class GraphAlgo(GraphAlgoInterface):
         """
         flag = True
         try:
-            with open(file_name) as file:
-                load = json.load(file)
+            with open(file_name, 'r') as jsonFile:
+                load = json.load(jsonFile)
                 graphJson = DiGraph()
             for node in load["Nodes"]:
                 if "pos" in node:
-                    posJ = tuple(map(float, str(node["pos"]).split(",")))
+                    x = node["pos"][0]
+                    y = node["pos"][1]
+                    z = node["pos"][2]
+                    # st = str(node["pos"]).split(",")
+                    # posJ = tuple(map(float, str(st[0], st[1], st[2])))
+                    posJ = x, y, z
+                    # posJ = tuple(map(float, str(node["pos"]).split(",")))
                     graphJson.add_node(node_id=node["id"], pos=posJ)
                 else:
                     graphJson.add_node(node_id=node["id"])
@@ -45,7 +51,7 @@ class GraphAlgo(GraphAlgoInterface):
             print("load failed")
             flag = False
         finally:
-            file.close()
+            jsonFile.close()
             return flag
 
     def save_to_json(self, file_name: str) -> bool:
@@ -55,7 +61,7 @@ class GraphAlgo(GraphAlgoInterface):
         @return: True if the save was successful, False o.w.
         """
         flag = True
-        with open(file_name) as jsonFile:
+        with open(file_name, "w") as jsonFile:
             try:
                 d = {"Nodes": [], "Edges": []}
                 for src in self._graphAlgo.outEdges.keys():
@@ -63,10 +69,11 @@ class GraphAlgo(GraphAlgoInterface):
                         d["Edges"].append({"src": src, "w": w, "dest": dst})
 
                 for node in self._graphAlgo.nodes.values():
+                    # print(node.location)  # TODO: should check how to get location from node
                     if node.location is None:
                         d["Nodes"].append({"id": node.node_id})
                     else:
-                        d["Nodes"].append({"pos": str(node.location), "id": node.node_id})
+                        d["Nodes"].append({"pos": str(node.location), "id": node})
                 jsonFile.write(d.__repr__())
                 print("Save Json was succeeded ")
                 flag = True
@@ -148,5 +155,4 @@ if __name__ == '__main__':
     print(g1.get_graph().__repr__())
     g1.get_graph().remove_node(1)
     print(g1.get_graph().__repr__())
-    # print(g1.save_to_json("TalTest")) should be fix
-
+    print(g1.save_to_json("TalTest"))  # should be fix
