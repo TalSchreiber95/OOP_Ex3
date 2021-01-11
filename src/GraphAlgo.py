@@ -126,12 +126,11 @@ class GraphAlgo(GraphAlgoInterface):
         prev_node = dict()  # A map that stores: {key(int), caller(Node)} (Which node called which)
         pq = PriorityQueue()  # A queue to prioritize nodes with lower weight
         visited = dict()  # Keep track of visited nodes
-        path = []  # A list of nodes that represents the path between id1 and id2
 
         total_dist = 0.0
         destination_found = False
         curr = self._graph.get_node(id1)
-        curr.weight = 0
+        curr.weight = total_dist
         visited[curr.key] = True
 
         pq.put(curr)
@@ -157,7 +156,9 @@ class GraphAlgo(GraphAlgoInterface):
             visited[curr.key] = True
 
         if destination_found:
-            path = self.rebuild_path(prev_node, src, dest)
+            path = self.rebuild_path(prev_node, src, dest)  # A list of nodes that represents the path between id1
+            # and id2
+
             total_dist = path[len(path) - 1].weight
             return total_dist, path
 
@@ -260,13 +261,22 @@ class GraphAlgo(GraphAlgoInterface):
 
     def connected_components(self) -> List[list]:
         """
-        Finds all the Strongly Connected Component(SCC) in the graph.
+        Finds all the Strongly Connected Components(SCC) in the graph.
         @return: The list all SCC
 
         Notes:
         If the graph is None the function should return an empty list []
         """
-        pass
+        ans = []
+        visited = dict()  # A dictionary of visited nodes
+
+        for key in self._graph.get_all_v():
+            if not visited.get(key):
+                path = self.connected_component(key)
+                for node in path:
+                    visited.__setitem__(node.key, True)
+                ans.append(path)
+        return ans
 
     def plot_graph(self) -> None:
         """
@@ -305,6 +315,7 @@ if __name__ == '__main__':
     ga = GraphAlgo(g1)
     # print(ga.shortest_path(4, 3))
     print(ga.connected_component(1))
+    print(ga.connected_components())
 
     # file = 'A5.txt'
     # g1 = GraphAlgo()
