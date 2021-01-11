@@ -2,9 +2,10 @@ import json
 from typing import List
 
 from GraphAlgoInterface import GraphAlgoInterface
-from src.DiGraph import DiGraph
+from src.DiGraph import DiGraph, NodeData
 from src.GraphInterface import GraphInterface
 from queue import PriorityQueue
+from queue import Queue
 
 
 class GraphAlgo(GraphAlgoInterface):
@@ -162,18 +163,20 @@ class GraphAlgo(GraphAlgoInterface):
 
         return float('inf'), []
 
+    # This method back-tracks, takes a map of int keys and NodeData values
+    # inserts all nodes in the path to a list and return the list
     def rebuild_path(self, node_map: dict = None, src: int = 0, dest: int = 0) -> list:
         if node_map is None:
             return None
         ans = [self._graph.get_node(dest)]  # Start from the end
 
-        for called_node in node_map.keys():
+        for called_node in node_map.keys():  # Iterate over the map until reached source node.
             calling_node = node_map.get(called_node)
             ans.append(calling_node)
             if calling_node.key == src:
                 break
 
-        ans.reverse()
+        ans.reverse()  # Inserted from
         return ans
 
     def reset_tags(self):
@@ -195,7 +198,65 @@ class GraphAlgo(GraphAlgoInterface):
         Notes:
         If the graph is None or id1 is not in the graph, the function should return an empty list []
         """
-        pass
+        if self._graph is None or self._graph.get_node(id1) is None:
+            return []
+        self.reset_tags()
+        # Traverse the original graph, from node id1, and tag all reachable nodes
+        ans = []
+        src = id1  # alias
+
+        self.traverse_breadth_first(src, self._graph)
+        # Reverse graph's edges
+        temp = self.reverse_graph()
+        self.traverse_breadth_first(src, temp)
+
+        for key in temp.get_all_v():
+            node = temp.get_node(key)
+            if node.tag == 2:
+                ans.append(node)
+
+        print(self._graph.__repr__())
+        # Traverse the reversed graph, from node id1, and un-tag all reachable nodes
+        #
+        return ans
+
+    def traverse_breadth_first(self, src: int = 0, graph: object = None):
+        if not isinstance(graph, DiGraph) or graph is None:
+            return
+        curr = graph.get_node(src)
+
+        q = Queue()
+
+        q.put(curr)
+        curr.tag += 1
+
+        while not q.empty():
+
+            curr = q.get()
+            out_edges = graph.all_out_edges_of_node(curr.key)
+
+            for i in out_edges:
+                out_edge = out_edges[i]
+                neighbor = graph.get_node(out_edge.dest)  # Get curr's neighbor
+                if neighbor.tag == curr.tag - 1:
+                    neighbor.tag += 1  # If un-tagged -> tag it.
+                    q.put(neighbor)  # and enqueue it
+
+    def reverse_graph(self) -> object:
+        ans = DiGraph()
+        # {key: NodeData}
+        nodes = self._graph.get_all_v()
+        for key in nodes:
+            ans.add_node(key)
+            ans.get_node(key).tag = self._graph.get_node(key).tag
+
+        for key in nodes:
+            out_edges = self._graph.all_out_edges_of_node(key)
+            for edge in out_edges:
+                e = out_edges.get(edge)
+                ans.add_edge(e.dest, e.src, e.weight)
+
+        return ans
 
     def connected_components(self) -> List[list]:
         """
@@ -227,19 +288,23 @@ if __name__ == '__main__':
     g1.add_node(1)
     g1.add_node(2)
     g1.add_node(3)
-    g1.add_node(4)
+    # g1.add_node(4)
 
-    g1.add_edge(0,1,1)
-    g1.add_edge(1,2,2)
-    g1.add_edge(2,3,1)
-    g1.add_edge(2,1,1)
-    g1.add_edge(0,4,2)
-    g1.add_edge(4,0,3)
-    g1.add_edge(4,2,0.1)
-    g1.add_edge(2,4,2)
+    # g1.add_edge(0, 1, 1)
+    # g1.add_edge(1, 2, 2)
+    # g1.add_edge(2, 3, 1)
+    # # g1.add_edge(2, 1, 1)
+    # g1.add_edge(0, 4, 2)
+    # g1.add_edge(4, 0, 3)
+    # # g1.add_edge(4, 2, 0.1)
+    # g1.add_edge(2, 4, 2)
+    g1.add_edge(0, 1, 1)
+    g1.add_edge(1, 0, 1)
+    g1.add_edge(0, 2, 1)
 
     ga = GraphAlgo(g1)
-    print(ga.shortest_path(4, 3))
+    # print(ga.shortest_path(4, 3))
+    print(ga.connected_component(1))
 
     # file = 'A5.txt'
     # g1 = GraphAlgo()
