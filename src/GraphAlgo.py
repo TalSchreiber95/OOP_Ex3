@@ -35,7 +35,6 @@ class GraphAlgo(GraphAlgoInterface):
                     graphJson.add_node(node_id=node["id"], pos=posJ)
                 else:
                     graphJson.add_node(node_id=node["id"])
-
             for edge in load["Edges"]:
                 graphJson.add_edge(id1=edge["src"], id2=edge["dest"], weight=edge["w"])
             self._graphAlgo = graphJson
@@ -69,7 +68,6 @@ class GraphAlgo(GraphAlgoInterface):
                 s = d.__str__()
                 s = s.replace(" ", "")
                 s = s.replace("'", "\"")
-                print(s)
                 jsonFile.write(s)
                 print("Save Json was succeeded ")
             except Exception as e:
@@ -151,7 +149,7 @@ if __name__ == '__main__':
     print(g1.get_graph().__repr__())
     g1.get_graph().remove_node(1)
     print("after remove")
-    print(g1.get_graph().__repr__())
-    print(g1.save_to_json("TalTest.txt"))  # TODO: should fix the counter and then we done
+    print(g1)
+    print(g1.save_to_json("TalTest.txt"))
     print(g1.load_from_json("TalTest.txt"))
     print(g1)

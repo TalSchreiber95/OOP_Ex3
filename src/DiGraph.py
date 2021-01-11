@@ -2,7 +2,7 @@ from GraphInterface import GraphInterface
 
 
 class EdgeData(object):
-    def __init__(self, src: int, dest: int, tag: int, info: str, weight: int = 0):
+    def __init__(self, src: int, dest: int, tag: int, info: str, weight: float = 0):
         self.src = src
         self.dest = dest
         self.tag = tag
@@ -71,6 +71,9 @@ class DiGraph(GraphInterface):
                 Returns the number of edges in this graph
                 @return: The number of edges in this graph
                 """
+        # self.sizeE = 0
+        # for dest in self.inEdges.keys():
+        #     self.sizeE = len(self.all_in_edges_of_node(dest))
         return self.sizeE
 
     def get_all_v(self) -> dict:
@@ -113,7 +116,7 @@ class DiGraph(GraphInterface):
             return False
         if weight < 0:
             return False
-        if id2 in self.outEdges.get(id1) and id1 in self.inEdges.get(id2):
+        if id2 in self.outEdges.get(id1) or id1 in self.inEdges.get(id2):
             return False  # If edge (src,dest) did not exist before, increment edgeSize.
         self.sizeE += 1
         self.sizeMc += 1
@@ -158,9 +161,11 @@ class DiGraph(GraphInterface):
         for i in self.outEdges.keys():
             if node_id in self.outEdges[i].keys():
                 del self.outEdges[i][node_id]
+                self.sizeE -= 1
         for j in self.inEdges.keys():
             if node_id in self.inEdges[j].keys():
                 del self.inEdges[j][node_id]
+                self.sizeE -= 1
         self.outEdges.pop(node_id)
         self.inEdges.pop(node_id)
         self.nodes.pop(node_id)
