@@ -65,7 +65,7 @@ class NodeData(object):
             return 0
 
     def __repr__(self):
-        return "{} w:({})".format(self.key, self.weight)
+        return "{} t:({})".format(self.key, self.tag)
 
 
 class DiGraph(GraphInterface):
