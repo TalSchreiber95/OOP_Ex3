@@ -31,13 +31,7 @@ class GraphAlgo(GraphAlgoInterface):
                 graphJson = DiGraph()
             for node in load["Nodes"]:
                 if "pos" in node:
-                    x = node["pos"][0]
-                    y = node["pos"][1]
-                    z = node["pos"][2]
-                    # st = str(node["pos"]).split(",")
-                    # posJ = tuple(map(float, str(st[0], st[1], st[2])))
-                    posJ = x, y, z
-                    # posJ = tuple(map(float, str(node["pos"]).split(",")))
+                    posJ = tuple(map(float, str(node["pos"]).split(",")))
                     graphJson.add_node(node_id=node["id"], pos=posJ)
                 else:
                     graphJson.add_node(node_id=node["id"])
@@ -63,18 +57,20 @@ class GraphAlgo(GraphAlgoInterface):
         flag = True
         with open(file_name, "w") as jsonFile:
             try:
-                d = {"Nodes": [], "Edges": []}
+                d = {"Edges": [], "Nodes": []}
                 for src in self._graphAlgo.outEdges.keys():
                     for dst, w in self._graphAlgo.all_out_edges_of_node(src).items():
-                        d["Edges"].append({"src": src, "w": w, "dest": dst})
-
-                for node in self._graphAlgo.nodes.keys():
-                    # print(node.location)  # TODO: should check how to get location from node
-                    if node.location is None:
-                        d["Nodes"].append({"id": node})
+                        d["Edges"].append({"src": src, "w": w.weight, "dest": dst})
+                for key, value in self._graphAlgo.nodes.items():
+                    if value.location is None:
+                        d["Nodes"].append({"id": key})
                     else:
-                        d["Nodes"].append({"pos": str(node), "id": node})
-                jsonFile.write(d.__repr__())
+                        d["Nodes"].append({"pos": str(value.location), "id": key})
+                s = d.__str__()
+                s = s.replace(" ", "")
+                s = s.replace("'", "\"")
+                print(s)
+                jsonFile.write(s)
                 print("Save Json was succeeded ")
             except Exception as e:
                 print("Save Json was failed ")
@@ -151,7 +147,11 @@ if __name__ == '__main__':
     g2 = g1.load_from_json(file_name=file)
     print("\n\n\n\ngraph algo is\n\n")
     print(f"Graph load check:{g2} \n\n")
+    print("before remove")
     print(g1.get_graph().__repr__())
     g1.get_graph().remove_node(1)
+    print("after remove")
     print(g1.get_graph().__repr__())
-    print(g1.save_to_json("TalTest.txt"))  # should be fix
+    print(g1.save_to_json("TalTest.txt"))  # TODO: should fix the counter and then we done
+    print(g1.load_from_json("TalTest.txt"))
+    print(g1)

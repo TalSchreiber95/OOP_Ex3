@@ -29,6 +29,9 @@ class GeoLocation(object):
     def __repr__(self):
         return f"{self.x}, {self.y}, {self.z}"
 
+    def __str__(self):
+        return f"{self.x}, {self.y}, {self.z}"
+
 
 class NodeData(object):
     def __init__(self, key: int, tag=0, info="", location: tuple = None, weight=0):
@@ -36,18 +39,10 @@ class NodeData(object):
         self.tag = tag
         self.info = info
         self.weight = weight
-        self.location = 0
         if location is not None:
             self.location = GeoLocation(location)
         else:
             self.location = None
-
-    # TODO: SHOULD BE KNOWN HOW TO GET THIS LOCATION
-    def getLocation(self, key):
-        if self.key == key:
-            return self.location
-        else:
-            pass
 
     def __repr__(self):
         return "{}".format(self.key)
@@ -122,16 +117,12 @@ class DiGraph(GraphInterface):
             return False  # If edge (src,dest) did not exist before, increment edgeSize.
         self.sizeE += 1
         self.sizeMc += 1
-        edge = EdgeData.__init__(self, src=id1, dest=id2, tag=0, info=f"{id1}-->{id2}", weight=weight)
-        # id1d = id1, edge
-        # id2d = id2, edge TODO: MUST known how to create dict inside dict
-        # self.inEdges[id2] = id1d
+        edge = EdgeData(src=id1, dest=id2, tag=0, info=f"{id1}-->{id2}", weight=weight)
         self.inEdges[id2][id1] = edge
-        # self.outEdges[id1] = id2d
         self.outEdges[id1][id2] = edge
         return True
 
-    def getNode(self, key):  # TODO:
+    def getNode(self, key):
         if self.nodes[key] == key:
             return self.nodes[key]
 
@@ -147,7 +138,7 @@ class DiGraph(GraphInterface):
               """
         if node_id in self.nodes:
             return False
-        self.nodes[node_id] = NodeData(node_id, location=pos)
+        self.nodes[node_id] = NodeData(key=node_id, location=pos)
         self.outEdges[node_id] = {}
         self.inEdges[node_id] = {}
         self.sizeV += 1
@@ -200,22 +191,20 @@ class DiGraph(GraphInterface):
             s += "{} --> in [".format(self.nodes[key])
             n = 0
             for w in self.all_in_edges_of_node(key).keys():
-                s += "{}({})".format(str(w), self.inEdges[key][w])
+                s += "{}({})".format(str(w), self.inEdges[key][w].weight)
                 s += " ,"
                 n += 1
             if n > 0:
                 s = s[:-2]
-                # s = s[:-1]
             s += "]\n"
             s += "{} --> Out [".format(self.nodes[key])
             n = 0
             for w in self.all_out_edges_of_node(key).keys():
-                s += "{}({})".format(str(w), self.outEdges[key][w])
+                s += "{}({})".format(str(w), self.outEdges[key][w].weight)
                 s += " ,"
                 n += 1
             if n > 0:
                 s = s[:-2]
-                # s = s[:-1]
             s += "]\n"
         return s
 
