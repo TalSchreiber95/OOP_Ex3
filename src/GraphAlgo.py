@@ -4,19 +4,23 @@ from typing import List
 from GraphAlgoInterface import GraphAlgoInterface
 from src.DiGraph import DiGraph
 from src.GraphInterface import GraphInterface
+from queue import PriorityQueue
 
 
 class GraphAlgo(GraphAlgoInterface):
     """This abstract class represents an interface of a graph."""
 
-    def __init__(self):
-        self._graphAlgo = DiGraph()
+    def __init__(self, directed_graph: object = None):
+        self._graph = DiGraph()
+        if directed_graph is not None:
+            if isinstance(directed_graph, DiGraph):
+                self._graph = directed_graph
 
     def get_graph(self) -> GraphInterface:
         """
         :return: the directed graph on which the algorithm works on.
         """
-        return self._graphAlgo
+        return self._graph
 
     def load_from_json(self, file_name: str) -> bool:
         """
@@ -37,7 +41,7 @@ class GraphAlgo(GraphAlgoInterface):
                     graphJson.add_node(node_id=node["id"])
             for edge in load["Edges"]:
                 graphJson.add_edge(id1=edge["src"], id2=edge["dest"], weight=edge["w"])
-            self._graphAlgo = graphJson
+            self._graph = graphJson
             print("load successes")
         except Exception as e:
             print(e)
@@ -57,10 +61,10 @@ class GraphAlgo(GraphAlgoInterface):
         with open(file_name, "w") as jsonFile:
             try:
                 d = {"Edges": [], "Nodes": []}
-                for src in self._graphAlgo.outEdges.keys():
-                    for dst, w in self._graphAlgo.all_out_edges_of_node(src).items():
+                for src in self._graph.outEdges.keys():
+                    for dst, w in self._graph.all_out_edges_of_node(src).items():
                         d["Edges"].append({"src": src, "w": w.weight, "dest": dst})
-                for key, value in self._graphAlgo.nodes.items():
+                for key, value in self._graph.nodes.items():
                     if value.location is None:
                         d["Nodes"].append({"id": key})
                     else:
@@ -103,7 +107,84 @@ class GraphAlgo(GraphAlgoInterface):
         More info:
         https://en.wikipedia.org/wiki/Dijkstra's_algorithm
         """
-        pass
+
+        # Edge cases
+        # Either one of the nodes does not exist in the graph.
+        if id1 not in self._graph.get_all_v() or id2 not in self._graph.get_all_v():
+            return float('inf'), []
+        if id1 == id2:  # The path from a node to itself is empty and the total distance is 0
+            return 0, []
+
+        # Initialization
+        src = id1
+        dest = id2
+
+        self.reset_tags()
+        self.set_weights_infinity()
+
+        prev_node = dict()  # A map that stores: {key(int), caller(Node)} (Which node called which)
+        pq = PriorityQueue()  # A queue to prioritize nodes with lower weight
+        visited = dict()  # Keep track of visited nodes
+        path = []  # A list of nodes that represents the path between id1 and id2
+
+        total_dist = 0.0
+        destination_found = False
+        curr = self._graph.get_node(id1)
+        curr.weight = 0
+        visited[curr.key] = True
+
+        pq.put(curr)
+
+        # Traverse
+        while not pq.empty():
+
+            curr = pq.get()  # Pop the next node with the lowest weight O(log(n))
+            neighbors = self._graph.all_out_edges_of_node(curr.key)  # Neighbors of curr node
+            for i in neighbors:  # Iterate over neighbors of curr
+                out_edge = neighbors[i]
+                neighbor = self._graph.get_node(out_edge.dest)
+                if not visited.get(neighbor.key):  # Process node if not visited
+                    total_dist = curr.weight + out_edge.weight
+                    if total_dist < neighbor.weight:
+                        neighbor.weight = total_dist
+                        prev_node.__setitem__(neighbor.key, curr)
+                    if neighbor not in pq.queue:  # If not already in the queue, enqueue neighbor.
+                        pq.put(neighbor)
+            # Finished processing curr's neighbors
+            if curr.key == dest:
+                destination_found = True
+            visited[curr.key] = True
+
+        if destination_found:
+            path = self.rebuild_path(prev_node, src, dest)
+            total_dist = path[len(path) - 1].weight
+            return total_dist, path
+
+        return float('inf'), []
+
+    def rebuild_path(self, node_map: dict = None, src: int = 0, dest: int = 0) -> list:
+        if node_map is None:
+            return None
+        ans = [self._graph.get_node(dest)]  # Start from the end
+
+        for called_node in node_map.keys():
+            calling_node = node_map.get(called_node)
+            ans.append(calling_node)
+            if calling_node.key == src:
+                break
+
+        ans.reverse()
+        return ans
+
+    def reset_tags(self):
+        for key in self._graph.get_all_v().keys():
+            node = self.get_graph().get_node(key)
+            node.tag = 0
+
+    def set_weights_infinity(self):
+        for key in self._graph.get_all_v().keys():
+            node = self._graph.get_node(key)
+            node.weight = float('inf')
 
     def connected_component(self, id1: int) -> list:
         """
@@ -136,20 +217,40 @@ class GraphAlgo(GraphAlgoInterface):
         pass
 
     def __repr__(self):
-        return self._graphAlgo.__repr__()
+        return self._graph.__repr__()
 
 
 if __name__ == '__main__':
-    file = 'A5.txt'
-    g1 = GraphAlgo()
-    g2 = g1.load_from_json(file_name=file)
-    print("\n\n\n\ngraph algo is\n\n")
-    print(f"Graph load check:{g2} \n\n")
-    print("before remove")
-    print(g1.get_graph().__repr__())
-    g1.get_graph().remove_node(1)
-    print("after remove")
-    print(g1)
-    print(g1.save_to_json("TalTest.txt"))
-    print(g1.load_from_json("TalTest.txt"))
-    print(g1)
+    g1 = DiGraph()
+
+    g1.add_node(0)
+    g1.add_node(1)
+    g1.add_node(2)
+    g1.add_node(3)
+    g1.add_node(4)
+
+    g1.add_edge(0,1,1)
+    g1.add_edge(1,2,2)
+    g1.add_edge(2,3,1)
+    g1.add_edge(2,1,1)
+    g1.add_edge(0,4,2)
+    g1.add_edge(4,0,3)
+    g1.add_edge(4,2,0.1)
+    g1.add_edge(2,4,2)
+
+    ga = GraphAlgo(g1)
+    print(ga.shortest_path(4, 3))
+
+    # file = 'A5.txt'
+    # g1 = GraphAlgo()
+    # g2 = g1.load_from_json(file_name=file)
+    # print("\n\n\n\ngraph algo is\n\n")
+    # print(f"Graph load check:{g2} \n\n")
+    # print("before remove")
+    # print(g1.get_graph().__repr__())
+    # g1.get_graph().remove_node(1)
+    # print("after remove")
+    # print(g1)
+    # print(g1.save_to_json("TalTest.txt"))
+    # print(g1.load_from_json("TalTest.txt"))
+    # print(g1)
