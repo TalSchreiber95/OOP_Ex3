@@ -15,7 +15,6 @@ class EdgeData(object):
 
 class GeoLocation(object):
     def __init__(self, location: tuple = None):
-        self.location = location
         if location is not None:
             self.x = location[0]
             self.y = location[1]
@@ -37,12 +36,14 @@ class NodeData(object):
         self.tag = tag
         self.info = info
         self.weight = weight
+        self.location = 0
         if location is not None:
             self.location = GeoLocation(location)
         else:
             self.location = None
 
-    def _getLocation(self, key):
+    # TODO: SHOULD BE KNOWN HOW TO GET THIS LOCATION
+    def getLocation(self, key):
         if self.key == key:
             return self.location
         else:
@@ -117,20 +118,20 @@ class DiGraph(GraphInterface):
             return False
         if weight < 0:
             return False
-        if id2 in self.outEdges.get(id1) or id1 in self.inEdges.get(id2):
+        if id2 in self.outEdges.get(id1) and id1 in self.inEdges.get(id2):
             return False  # If edge (src,dest) did not exist before, increment edgeSize.
         self.sizeE += 1
         self.sizeMc += 1
         edge = EdgeData.__init__(self, src=id1, dest=id2, tag=0, info=f"{id1}-->{id2}", weight=weight)
         # id1d = id1, edge
-        # id2d = id2, edge
+        # id2d = id2, edge TODO: MUST known how to create dict inside dict
         # self.inEdges[id2] = id1d
         self.inEdges[id2][id1] = edge
         # self.outEdges[id1] = id2d
         self.outEdges[id1][id2] = edge
         return True
 
-    def getNode(self, key):
+    def getNode(self, key):  # TODO:
         if self.nodes[key] == key:
             return self.nodes[key]
 
@@ -186,7 +187,7 @@ class DiGraph(GraphInterface):
                  Note: If such an edge does not exists the function will do nothing
                  """
         if node_id1 in self.nodes and node_id2 in self.nodes and node_id2 != node_id1:
-            if node_id2 in self.outEdges and node_id1 in self.inEdges:
+            if node_id2 in self.outEdges[node_id1] and node_id1 in self.inEdges[node_id2]:
                 del self.outEdges[node_id1][node_id2]
                 del self.inEdges[node_id2][node_id1]
                 self.sizeE -= 1
@@ -230,7 +231,7 @@ if __name__ == '__main__':
     g.add_edge(3, 4, 1.9)
     g.remove_edge(0, 3)
     g.add_edge(0, 3, 1.2)
-    print(g.inEdges[0])
+    print(g.outEdges[1])
     print(g)  # prints the __repr__ (func output)
     print(g.get_all_v())  # prints a dict with all the graph's vertices.
     print(g.all_in_edges_of_node(1))
