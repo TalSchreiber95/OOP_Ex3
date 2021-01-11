@@ -44,8 +44,28 @@ class NodeData(object):
         else:
             self.location = None
 
+    def __cmp__(self, other):
+        if other is None or not isinstance(other, NodeData):
+            return 1
+        if self.weight > other.weight:
+            return 1
+        elif self.weight < other.weight:
+            return -1
+        else:
+            return 0
+
+    def __lt__(self, other):
+        if other is None or not isinstance(other, NodeData):
+            return 1
+        if self.weight > other.weight:
+            return 1
+        elif self.weight < other.weight:
+            return -1
+        else:
+            return 0
+
     def __repr__(self):
-        return "{}".format(self.key)
+        return "{} w:({})".format(self.key, self.weight)
 
 
 class DiGraph(GraphInterface):
@@ -125,9 +145,8 @@ class DiGraph(GraphInterface):
         self.outEdges[id1][id2] = edge
         return True
 
-    def getNode(self, key):
-        if self.nodes[key] == key:
-            return self.nodes[key]
+    def get_node(self, key):
+        return self.nodes[key]
 
     def add_node(self, node_id: int, pos: tuple = None) -> bool:
 
