@@ -51,7 +51,7 @@ class GraphAlgo(GraphAlgoInterface):
             print("load failed")
             flag = False
         finally:
-            jsonFile.close()
+            # jsonFile.close()
             return flag
 
     def save_to_json(self, file_name: str) -> bool:
@@ -68,21 +68,20 @@ class GraphAlgo(GraphAlgoInterface):
                     for dst, w in self._graphAlgo.all_out_edges_of_node(src).items():
                         d["Edges"].append({"src": src, "w": w, "dest": dst})
 
-                for node in self._graphAlgo.nodes.values():
+                for node in self._graphAlgo.nodes.keys():
                     # print(node.location)  # TODO: should check how to get location from node
                     if node.location is None:
-                        d["Nodes"].append({"id": node.node_id})
+                        d["Nodes"].append({"id": node})
                     else:
-                        d["Nodes"].append({"pos": str(node.location), "id": node})
+                        d["Nodes"].append({"pos": str(node), "id": node})
                 jsonFile.write(d.__repr__())
                 print("Save Json was succeeded ")
-                flag = True
             except Exception as e:
                 print("Save Json was failed ")
                 print(e)
                 flag = False
             finally:
-                jsonFile.close()
+                # jsonFile.close()
                 return flag
 
     def shortest_path(self, id1: int, id2: int) -> (float, list):
@@ -149,10 +148,10 @@ class GraphAlgo(GraphAlgoInterface):
 if __name__ == '__main__':
     file = 'A5.txt'
     g1 = GraphAlgo()
-    g2 = GraphAlgo.load_from_json(g1, file_name=file)
+    g2 = g1.load_from_json(file_name=file)
     print("\n\n\n\ngraph algo is\n\n")
     print(f"Graph load check:{g2} \n\n")
     print(g1.get_graph().__repr__())
     g1.get_graph().remove_node(1)
     print(g1.get_graph().__repr__())
-    print(g1.save_to_json("TalTest"))  # should be fix
+    print(g1.save_to_json("TalTest.txt"))  # should be fix
