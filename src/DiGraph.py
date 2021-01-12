@@ -174,7 +174,7 @@ class DiGraph(GraphInterface):
         return True
 
     def get_node(self, key):
-        return self.nodes[key]
+        return self.nodes.get(key)
 
     def add_node(self, node_id: int, pos: tuple = None) -> bool:
 
