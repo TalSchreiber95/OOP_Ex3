@@ -36,9 +36,10 @@ class GraphAlgoTest(unittest.TestCase):
 
     def test_shortest_path(self):
         print("Test shortest_path()")
-        g1 = self.make_graph()
-        ga = GraphAlgo(g1)
-        print(ga.shortest_path(1, 3))
+        ga = GraphAlgo(self.make_graph())
+        # print(ga.shortest_path(1, 3))
+        ga.load_from_json('../data/A5.txt')
+        print(ga.shortest_path(0, 2))
 
     def test_connected_component(self):
         self.fail()
