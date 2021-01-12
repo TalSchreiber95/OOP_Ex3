@@ -302,9 +302,11 @@ class GraphAlgo(GraphAlgoInterface):
         for src, node in g.get_all_v().items():
             # Print the node point
             if node.location is None:
-                pos = 0, 0, 0
-                node.location.x = GeoLocation(pos)
-                node.location.y = GeoLocation(pos)
+                # pos = 0, 0, 0
+
+                pos = self.get_random_location()
+                node.location = GeoLocation(pos)
+                # node.location.y = GeoLocation(pos)
             plt.plot(node.location.x, node.location.y, marker='o', markerfacecolor='red', markersize=3, color='yellow')
             plt.text(node.location.x, node.location.y, str(node.key))
 
@@ -324,7 +326,6 @@ class GraphAlgo(GraphAlgoInterface):
 
     def get_random_location(self):
         max_x, max_y, max_z, min_x, min_y, min_z = self.get_max_and_min()
-        # if 's', 's', 's', 's', 's', 's' == max_x, max_y, max_z, min_x, min_y, min_z:
         counter = 0
         for src, node in self._graph.get_all_v().items():
             if node.location is not None:
@@ -361,7 +362,7 @@ class GraphAlgo(GraphAlgoInterface):
         if counter > 0:
             ans = max_x, max_y, max_z, min_x, min_y, min_z
         else:
-            ans = 's', 's', 's', 's', 's', 's'
+            ans = 0.5, 0.5, 0.5, 0.5, 0.5, 0.5
         return ans
 
     def __repr__(self):
@@ -397,7 +398,7 @@ if __name__ == '__main__':
     # print(ga.connected_component(1))
     # print(ga.connected_components())
 
-    file = '../data/A5.txt'
+    file = '../data/Graphs_on_circle/G_10_80_1.json'
     g1 = GraphAlgo()
     g2 = g1.load_from_json(file_name=file)
     g1.plot_graph()
