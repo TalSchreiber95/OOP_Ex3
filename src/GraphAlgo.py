@@ -12,8 +12,13 @@ from queue import Queue
 
 
 class GraphAlgo(GraphAlgoInterface):
-    """This abstract class represents an interface of a graph."""
-
+    """
+    * This class represents a set of graph theory algorithms to
+    * apply on a directed, weighted graph data structure, including:
+    * Saving and loading a graph, calculating shortest paths on the graph from
+    * one node to another,
+     checking if the graph is strongly connected, and so on...
+    """
     def __init__(self, directed_graph: object = None):
         self._graph = DiGraph()
         if directed_graph is not None:
@@ -291,14 +296,10 @@ class GraphAlgo(GraphAlgoInterface):
         for src, node in g.get_all_v().items():
             # Print the node point
             if node.location is None:
-                # pos = 0, 0, 0
-
                 pos = self.get_random_location()
                 node.location = GeoLocation(pos)
-                # node.location.y = GeoLocation(pos)
             plt.plot(node.location.x, node.location.y, marker='o', markerfacecolor='red', markersize=3, color='yellow')
             plt.text(node.location.x, node.location.y, str(node.key))
-
             # Print the edge line
             for dest in g.all_out_edges_of_node(src).keys():
                 x1 = g.get_all_v()[src].location.x
@@ -310,7 +311,6 @@ class GraphAlgo(GraphAlgoInterface):
                 x2 = g.get_all_v()[dest].location.x
                 y2 = g.get_all_v()[dest].location.y
                 plt.arrow(x1, y1, x2 - x1, y2 - y1, width=0.00001, linewidth=0.05)
-
         plt.show()
 
     def get_random_location(self):
@@ -387,10 +387,16 @@ if __name__ == '__main__':
     # print(ga.connected_component(1))
     # print(ga.connected_components())
 
-    file = '../data/Graphs_on_circle/G_10_80_1.json'
-    g1 = GraphAlgo()
-    g2 = g1.load_from_json(file_name=file)
-    g1.plot_graph()
+    # file = '../data/Graphs_no_pos/G_10_80_0.json'
+    # g1 = GraphAlgo()
+    # g2 = g1.load_from_json(file_name=file)
+    # g1.plot_graph()
+
+    s = "16"
+    print(type(s))
+    s = float(s)
+    print(type(s))
+
     # print("\n\n\n\ngraph algo is\n\n")
     # print(f"Graph load check:{g2} \n\n")
     # print("before remove")
