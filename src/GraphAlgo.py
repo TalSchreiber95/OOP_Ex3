@@ -1,5 +1,4 @@
 import json
-import math
 import random
 
 import matplotlib.pyplot as plt
@@ -141,7 +140,6 @@ class GraphAlgo(GraphAlgoInterface):
 
         # Traverse
         while not pq.empty():
-
             curr = pq.get()  # Pop the next node with the lowest weight O(log(n))
             neighbors = self._graph.all_out_edges_of_node(curr.key)  # Neighbors of curr node
             for i in neighbors:  # Iterate over neighbors of curr
@@ -171,15 +169,23 @@ class GraphAlgo(GraphAlgoInterface):
     # This method back-tracks, takes a map of int keys and NodeData values
     # inserts all nodes in the path to a list and return the list
     def rebuild_path(self, node_map: dict = None, src: int = 0, dest: int = 0) -> list:
-        if node_map is None:
+        if node_map is None or src == dest:
             return None
-        ans = [self._graph.get_node(dest)]  # Start from the end
+        ans = [self._graph.get_node(dest)]
+        # print(node_map)
+        next_node = node_map.get(dest)
+        # print(next_node)
 
-        for called_node in node_map.keys():  # Iterate over the map until reached source node.
-            calling_node = node_map.get(called_node)
-            ans.append(calling_node)
-            if calling_node.key == src:
-                break
+        while next_node.key is not src:  # Backtrack from dest to src
+            print(ans)
+            ans.append(node_map.get(next_node.key))
+            next_node = node_map.get(next_node.key)
+
+        # for prev in node_map.keys():  # Iterate over the map until reached source node.
+        #     calling_node = node_map.get(prev)
+        #     ans.append(calling_node)
+        #     if calling_node.key == src:
+        #         break
 
         ans.reverse()  # Inserted from
         return ans
