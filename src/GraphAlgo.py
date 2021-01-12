@@ -208,25 +208,28 @@ class GraphAlgo(GraphAlgoInterface):
         """
         if self._graph is None or self._graph.get_node(id1) is None:
             return []
-        self.reset_tags()
+
+        self.reset_tags()   # This method executes a BFS and tag nodes so reset_tags() must be called.
+
         # Traverse the original graph, from node id1, and tag all reachable nodes
         ans = []
         src = id1  # alias
-
-        self.traverse_breadth_first(src, self._graph)
+        original_graph = self.get_graph()
+        self.traverse_breadth_first(src, original_graph)
         # Transpose/Reverse graph's edges
         transposed_graph = self.reverse_graph()
         # Traverse the transposed graph, from node id1, and un-tag all reachable nodes
         self.traverse_breadth_first(src, transposed_graph)
 
+        # Iterate over nodes in the transposed graph and find the nodes that are tagged twice!
         for key in transposed_graph.get_all_v():
             node = transposed_graph.get_node(key)
             if node.tag == 2:
-                ans.append(node)
+                ans.append(self._graph.get_node(node.key))  # Append original node
         return ans
 
     def traverse_breadth_first(self, src: int = 0, graph: object = None):
-        if not isinstance(graph, DiGraph) or graph is None:
+        if not isinstance(graph, DiGraph) or graph is None or self._graph.get_node(src) is None:
             return
         curr = graph.get_node(src)
 
@@ -271,6 +274,8 @@ class GraphAlgo(GraphAlgoInterface):
         Notes:
         If the graph is None the function should return an empty list []
         """
+        # TODO: Maybe reset_tags()
+        self.reset_tags()
         ans = []
         visited = dict()  # A dictionary of visited nodes
 
