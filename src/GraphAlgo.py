@@ -1,9 +1,12 @@
 import json
+import math
+import random
+
 import matplotlib.pyplot as plt
 from typing import List
 
 from GraphAlgoInterface import GraphAlgoInterface
-from src.DiGraph import DiGraph, NodeData
+from src.DiGraph import DiGraph, NodeData, GeoLocation
 from src.GraphInterface import GraphInterface
 from queue import PriorityQueue
 from queue import Queue
@@ -292,6 +295,10 @@ class GraphAlgo(GraphAlgoInterface):
         plt.ylabel("-<")  # I should flip y letter so I decided to write it by a tricky way. :)
         for src, node in g.get_all_v().items():
             # Print the node point
+            if node.location is None:
+                pos = 0, 0, 0
+                node.location.x = GeoLocation(pos)
+                node.location.y = GeoLocation(pos)
             plt.plot(node.location.x, node.location.y, marker='o', markerfacecolor='red', markersize=3, color='yellow')
             plt.text(node.location.x, node.location.y, str(node.key))
 
@@ -299,11 +306,57 @@ class GraphAlgo(GraphAlgoInterface):
             for dest in g.all_out_edges_of_node(src).keys():
                 x1 = g.get_all_v()[src].location.x
                 y1 = g.get_all_v()[src].location.y
+                if g.get_all_v()[dest].location is None:
+                    pos = self.get_random_location()
+                    g.get_all_v()[dest].location = GeoLocation(pos)
+                    g.get_all_v()[dest].location = GeoLocation(pos)
                 x2 = g.get_all_v()[dest].location.x
                 y2 = g.get_all_v()[dest].location.y
                 plt.arrow(x1, y1, x2 - x1, y2 - y1, width=0.00001, linewidth=0.05)
 
         plt.show()
+
+    def get_random_location(self):
+        max_x, max_y, max_z, min_x, min_y, min_z = self.get_max_and_min()
+        # if 's', 's', 's', 's', 's', 's' == max_x, max_y, max_z, min_x, min_y, min_z:
+        counter = 0
+        for src, node in self._graph.get_all_v().items():
+            if node.location is not None:
+                counter += 1
+        x = random.uniform(max_x, min_x)
+        y = random.uniform(max_y, min_y)
+        z = random.uniform(max_z, min_z)
+        if counter == 0:  # means all nodes doesn't have any location
+            ans = 0.5, 0.5, 0.5
+        else:
+            ans = x, y, z
+        return ans
+
+    def get_max_and_min(self):
+        max_x = float('-inf')
+        min_x = float('inf')
+        max_y = float('-inf')
+        min_y = float('inf')
+        max_z = float('-inf')
+        min_z = float('inf')
+        counter = 0
+        for src, node in self._graph.get_all_v().items():
+            if node.location is not None:
+                x = node.location.x
+                y = node.location.y
+                z = node.location.z
+                counter += 1
+                max_x = x if x > max_x else max_x
+                min_x = x if x < min_x else min_x
+                max_y = y if y > max_y else max_y
+                min_y = y if y < min_y else min_y
+                max_z = z if z > max_z else max_z
+                min_z = z if z < min_z else min_z
+        if counter > 0:
+            ans = max_x, max_y, max_z, min_x, min_y, min_z
+        else:
+            ans = 's', 's', 's', 's', 's', 's'
+        return ans
 
     def __repr__(self):
         return self._graph.__repr__()

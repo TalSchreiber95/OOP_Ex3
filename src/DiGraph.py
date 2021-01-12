@@ -16,9 +16,10 @@ class EdgeData(object):
 class GeoLocation(object):
     def __init__(self, location: tuple = None):
         if location is not None:
-            self.x = location[0]
-            self.y = location[1]
-            self.z = location[2]
+            if len(location) == 3:
+                self.x = location[0]
+                self.y = location[1]
+                self.z = location[2]
 
     def distance(self, other):
         d1 = (self.x - other.x) ** 2  # (x1-x2)^2
