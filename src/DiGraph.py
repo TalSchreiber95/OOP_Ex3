@@ -232,6 +232,9 @@ class DiGraph(GraphInterface):
             s += "]\n"
         return s
 
+    def __str__(self):
+        return "\n|V|={} , |E|={} , MC={}".format(self.sizeV, self.sizeE, self.sizeMc)
+
 
 if __name__ == '__main__':
     g = DiGraph()  # creates an empty directed graph
@@ -244,7 +247,9 @@ if __name__ == '__main__':
     g.add_edge(3, 4, 1.9)
     g.remove_edge(0, 3)
     g.add_edge(0, 3, 1.2)
-    print(g.outEdges[1])
+    print(type(g.outEdges[1][0]))
+    print(g.remove_node(0))
+    print(g.remove_node(0))
     print(g)  # prints the __repr__ (func output)
     print(g.get_all_v())  # prints a dict with all the graph's vertices.
     print(g.all_in_edges_of_node(1))

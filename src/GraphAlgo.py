@@ -1,4 +1,5 @@
 import json
+import matplotlib.pyplot as plt
 from typing import List
 
 from GraphAlgoInterface import GraphAlgoInterface
@@ -285,19 +286,39 @@ class GraphAlgo(GraphAlgoInterface):
         Otherwise, they will be placed in a random but elegant manner.
         @return: None
         """
-        pass
+        g = self.get_graph()
+        plt.title("Our graph:" + g.__str__())
+        plt.xlabel("X")
+        plt.ylabel("-<")  # I should flip y letter so I decided to write it by a tricky way. :)
+        for src, node in g.get_all_v().items():
+            # Print the node point
+            plt.plot(node.location.x, node.location.y, marker='o', markerfacecolor='red', markersize=3, color='yellow')
+            plt.text(node.location.x, node.location.y, str(node.key))
+
+            # Print the edge line
+            for dest in g.all_out_edges_of_node(src).keys():
+                x1 = g.get_all_v()[src].location.x
+                y1 = g.get_all_v()[src].location.y
+                x2 = g.get_all_v()[dest].location.x
+                y2 = g.get_all_v()[dest].location.y
+                plt.arrow(x1, y1, x2 - x1, y2 - y1, width=0.00001, linewidth=0.05)
+
+        plt.show()
 
     def __repr__(self):
         return self._graph.__repr__()
 
+    def __str__(self):
+        return self._graph.__str__()
+
 
 if __name__ == '__main__':
-    g1 = DiGraph()
+    # g1 = DiGraph()
 
-    g1.add_node(0)
-    g1.add_node(1)
-    g1.add_node(2)
-    g1.add_node(3)
+    # g1.add_node(0)
+    # g1.add_node(1)
+    # g1.add_node(2)
+    # g1.add_node(3)
     # g1.add_node(4)
 
     # g1.add_edge(0, 1, 1)
@@ -308,18 +329,19 @@ if __name__ == '__main__':
     # g1.add_edge(4, 0, 3)
     # # g1.add_edge(4, 2, 0.1)
     # g1.add_edge(2, 4, 2)
-    g1.add_edge(0, 1, 1)
-    g1.add_edge(1, 0, 1)
-    g1.add_edge(0, 2, 1)
+    # g1.add_edge(0, 1, 1)
+    # g1.add_edge(1, 0, 1)
+    # g1.add_edge(0, 2, 1)
 
-    ga = GraphAlgo(g1)
+    # ga = GraphAlgo(g1)
     # print(ga.shortest_path(4, 3))
-    print(ga.connected_component(1))
-    print(ga.connected_components())
+    # print(ga.connected_component(1))
+    # print(ga.connected_components())
 
-    # file = 'A5.txt'
-    # g1 = GraphAlgo()
-    # g2 = g1.load_from_json(file_name=file)
+    file = '../data/A5.txt'
+    g1 = GraphAlgo()
+    g2 = g1.load_from_json(file_name=file)
+    g1.plot_graph()
     # print("\n\n\n\ngraph algo is\n\n")
     # print(f"Graph load check:{g2} \n\n")
     # print("before remove")
