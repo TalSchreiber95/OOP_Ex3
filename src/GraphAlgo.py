@@ -158,8 +158,7 @@ class GraphAlgo(GraphAlgoInterface):
             visited[curr.key] = True
 
         if destination_found:
-            path = self.rebuild_path(prev_node, src, dest)  # A list of nodes that represents the path between id1
-            # and id2
+            path = self.rebuild_path(prev_node, src, dest)  # A list of nodes that represents the path between id1->id2
 
             total_dist = path[len(path) - 1].weight
             return total_dist, path
@@ -172,20 +171,13 @@ class GraphAlgo(GraphAlgoInterface):
         if node_map is None or src == dest:
             return None
         ans = [self._graph.get_node(dest)]
-        # print(node_map)
         next_node = node_map.get(dest)
-        # print(next_node)
 
         while next_node.key is not src:  # Backtrack from dest to src
-            print(ans)
             ans.append(node_map.get(next_node.key))
             next_node = node_map.get(next_node.key)
-
-        # for prev in node_map.keys():  # Iterate over the map until reached source node.
-        #     calling_node = node_map.get(prev)
-        #     ans.append(calling_node)
-        #     if calling_node.key == src:
-        #         break
+        if self._graph.get_node(src) not in ans:
+            ans.append(self._graph.get_node(src))
 
         ans.reverse()  # Inserted from
         return ans
@@ -217,18 +209,15 @@ class GraphAlgo(GraphAlgoInterface):
         src = id1  # alias
 
         self.traverse_breadth_first(src, self._graph)
-        # Reverse graph's edges
-        temp = self.reverse_graph()
-        self.traverse_breadth_first(src, temp)
+        # Transpose/Reverse graph's edges
+        transposed_graph = self.reverse_graph()
+        # Traverse the transposed graph, from node id1, and un-tag all reachable nodes
+        self.traverse_breadth_first(src, transposed_graph)
 
-        for key in temp.get_all_v():
-            node = temp.get_node(key)
+        for key in transposed_graph.get_all_v():
+            node = transposed_graph.get_node(key)
             if node.tag == 2:
                 ans.append(node)
-
-        print(self._graph.__repr__())
-        # Traverse the reversed graph, from node id1, and un-tag all reachable nodes
-        #
         return ans
 
     def traverse_breadth_first(self, src: int = 0, graph: object = None):
@@ -255,8 +244,8 @@ class GraphAlgo(GraphAlgoInterface):
 
     def reverse_graph(self) -> object:
         ans = DiGraph()
-        # {key: NodeData}
-        nodes = self._graph.get_all_v()
+
+        nodes = self._graph.get_all_v()     # {key: NodeData}
         for key in nodes:
             ans.add_node(key)
             ans.get_node(key).tag = self._graph.get_node(key).tag
