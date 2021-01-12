@@ -2,7 +2,7 @@ from GraphInterface import GraphInterface
 
 
 class EdgeData(object):
-    def __init__(self, src: int, dest: int, tag: int, info: str, weight: float = 0):
+    def __init__(self, src: int, dest: int, weight: float = 0, tag: int = 0, info: str = ""):
         self.src = src
         self.dest = dest
         self.tag = tag
@@ -147,7 +147,7 @@ class DiGraph(GraphInterface):
         return True
 
     def get_node(self, key):
-        return self.nodes[key]
+        return self.nodes.get(key)
 
     def add_node(self, node_id: int, pos: tuple = None) -> bool:
 
