@@ -20,7 +20,7 @@ class GraphAlgo(GraphAlgoInterface):
      checking if the graph is strongly connected, and so on...
     """
 
-    def __init__(self, directed_graph: object = None):
+    def __init__(self, directed_graph: object = None): # TODO: should be change
         self._graph = DiGraph()
         if directed_graph is not None:
             if isinstance(directed_graph, DiGraph):
