@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from typing import List
 
 from GraphAlgoInterface import GraphAlgoInterface
-from src.DiGraph import DiGraph, NodeData, GeoLocation
+from src.DiGraph import DiGraph, GeoLocation
 from src.GraphInterface import GraphInterface
 from queue import PriorityQueue
 from queue import Queue
@@ -19,6 +19,7 @@ class GraphAlgo(GraphAlgoInterface):
     * one node to another,
      checking if the graph is strongly connected, and so on...
     """
+
     def __init__(self, directed_graph: object = None):
         self._graph = DiGraph()
         if directed_graph is not None:
@@ -27,7 +28,7 @@ class GraphAlgo(GraphAlgoInterface):
 
     def get_graph(self) -> GraphInterface:
         """
-        :return: the directed graph on which the algorithm works on.
+        @return: the directed graph on which the algorithm works on.
         """
         return self._graph
 
@@ -35,7 +36,7 @@ class GraphAlgo(GraphAlgoInterface):
         """
         Loads a graph from a json file.
         @param file_name: The path to the json file
-        @returns True if the loading was successful, False o.w.
+        @returns: True if the loading was successful, False o.w.
         """
         flag = True
         try:
@@ -57,7 +58,6 @@ class GraphAlgo(GraphAlgoInterface):
             print("load failed")
             flag = False
         finally:
-            # jsonFile.close()
             return flag
 
     def save_to_json(self, file_name: str) -> bool:
@@ -88,33 +88,18 @@ class GraphAlgo(GraphAlgoInterface):
                 print(e)
                 flag = False
             finally:
-                # jsonFile.close()
                 return flag
 
     def shortest_path(self, id1: int, id2: int) -> (float, list):
         """
-        Returns the shortest path from node id1 to node id2 using Dijkstra's Algorithm
-        @param id1: The start node id
-        @param id2: The end node id
-        @return: The distance of the path, a list of the nodes ids that the path goes through
-
-        Example:
-#      >>> from GraphAlgo import GraphAlgo
-#       >>> g_algo = GraphAlgo()
-#        >>> g_algo.addNode(0)
-#        >>> g_algo.addNode(1)
-#        >>> g_algo.addNode(2)
-#        >>> g_algo.addEdge(0,1,1)
-#        >>> g_algo.addEdge(1,2,4)
-#        >>> g_algo.shortestPath(0,1)
-#        (1, [0, 1])
-#        >>> g_algo.shortestPath(0,2)
-#        (5, [0, 1, 2])
-
-        Notes:
-        If there is no path between id1 and id2, or one of them dose not exist the function returns (float('inf'),[])
-        More info:
-        https://en.wikipedia.org/wiki/Dijkstra's_algorithm
+        * returns the the shortest path between src to dest - as an ordered List of nodes:
+        * src--> n1-->n2-->...dest
+        * Logic only was taken from: https://en.wikipedia.org/wiki/Shortest_path_problem
+        * Note if no such path --> returns null;
+        @Runtime: Regular BFS using a priority queue = O(|V|+|E|).
+        @param id1  - start node
+        @param id2 - end (target) node
+        @return - the path between src and dest if there is one.
         """
 
         # Edge cases
@@ -170,9 +155,11 @@ class GraphAlgo(GraphAlgoInterface):
 
         return float('inf'), []
 
-    # This method back-tracks, takes a map of int keys and NodeData values
-    # inserts all nodes in the path to a list and return the list
     def rebuild_path(self, node_map: dict = None, src: int = 0, dest: int = 0) -> list:
+        """
+        * This method back-tracks, takes a map of int keys and NodeData values
+        * inserts all nodes in the path to a list and return the list
+        """
         if node_map is None or src == dest:
             return None
         ans = [self._graph.get_node(dest)]
@@ -199,17 +186,15 @@ class GraphAlgo(GraphAlgoInterface):
 
     def connected_component(self, id1: int) -> list:
         """
-        Finds the Strongly Connected Component(SCC) that node id1 is a part of.
+        * Finds the Strongly Connected Component(SCC) that node id1 is a part of.
+        * Notes: If the graph is None or id1 is not in the graph, the function should return an empty list []
         @param id1: The node id
         @return: The list of nodes in the SCC
-
-        Notes:
-        If the graph is None or id1 is not in the graph, the function should return an empty list []
         """
         if self._graph is None or self._graph.get_node(id1) is None:
             return []
 
-        self.reset_tags()   # This method executes a BFS and tag nodes so reset_tags() must be called.
+        self.reset_tags()  # This method executes a BFS and tag nodes so reset_tags() must be called.
 
         # Traverse the original graph, from node id1, and tag all reachable nodes
         ans = []
@@ -228,7 +213,10 @@ class GraphAlgo(GraphAlgoInterface):
                 ans.append(self._graph.get_node(node.key))  # Append original node
         return ans
 
-    def traverse_breadth_first(self, src: int = 0, graph: object = None):
+    def traverse_breadth_first(self, src: int = 0, graph: GraphInterface = None):
+        """
+        * This method is made to traverse any node in the graph and set tag on them using bfs algorithm.
+        """
         if not isinstance(graph, DiGraph) or graph is None or self._graph.get_node(src) is None:
             return
         curr = graph.get_node(src)
@@ -250,10 +238,17 @@ class GraphAlgo(GraphAlgoInterface):
                     neighbor.tag += 1  # If un-tagged -> tag it.
                     q.put(neighbor)  # and enqueue it
 
-    def reverse_graph(self) -> object:
+    def reverse_graph(self) -> GraphInterface:
+        """
+        * This method transposes the given graph.
+        * The new graph will have the same set of vertices V = {v1, v2, .. , v(n)},
+        * And all transposed edges. E = {(v1,v2), (v2,v6), .. }, E(transposed) = {(v2,v1), (v6,v2), ..}.
+        * @param g - the given graph.
+        * @return a transposed directed_weighted_graph.
+        """
         ans = DiGraph()
 
-        nodes = self._graph.get_all_v()     # {key: NodeData}
+        nodes = self._graph.get_all_v()  # {key: NodeData}
         for key in nodes:
             ans.add_node(key)
             ans.get_node(key).tag = self._graph.get_node(key).tag
@@ -268,13 +263,10 @@ class GraphAlgo(GraphAlgoInterface):
 
     def connected_components(self) -> List[list]:
         """
-        Finds all the Strongly Connected Components(SCC) in the graph.
+        * This method finds all the Strongly Connected Components(SCC) in the graph.
+        * Notes: If the graph is None the function should return an empty list []
         @return: The list all SCC
-
-        Notes:
-        If the graph is None the function should return an empty list []
         """
-        # TODO: Maybe reset_tags()
         self.reset_tags()
         ans = []
         visited = dict()  # A dictionary of visited nodes
@@ -287,21 +279,20 @@ class GraphAlgo(GraphAlgoInterface):
                 ans.append(path)
         return ans
 
-    def plot_graph(self) -> None:
+    def plot_graph(self):
         """
         Plots the graph.
         If the nodes have a position, the nodes will be placed there.
-        Otherwise, they will be placed in a random but elegant manner.
-        @return: None
+        Otherwise, they will be placed in a random but elegant manner using get_random_location() function.
         """
         g = self.get_graph()
         plt.title("Our graph:" + g.__str__())
         plt.xlabel("X")
-        plt.ylabel("-<")  # I should flip y letter so I decided to write it by a tricky way. :)
+        plt.ylabel("-<")  # I should flip 'Y' letter so I decided to write it by a tricky way. :)
         for src, node in g.get_all_v().items():
             # Print the node point
             if node.location is None:
-                pos = self.get_random_location()
+                pos = self.get_random_location()  # get a elegant location
                 node.location = GeoLocation(pos)
             plt.plot(node.location.x, node.location.y, marker='o', markerfacecolor='red', markersize=3, color='yellow')
             plt.text(node.location.x, node.location.y, str(node.key))
@@ -319,7 +310,21 @@ class GraphAlgo(GraphAlgoInterface):
         plt.show()
 
     def get_random_location(self):
+        """
+        * This method was made to return a random location for a node when then node doesn't have any location.
+        * How it work?
+        * We get the max and min of the bounding box and then we set the nodes location on a random range inside it.
+        * if there is no bounding box , which means there is no node location enough to set this bounding box,
+        * so we set the nodes location in a range of x=[32,33],y=[35,36],z=0.
+        """
         max_x, max_y, max_z, min_x, min_y, min_z = self.get_max_and_min()
+        if max_x == float('-inf') and min_x == float('inf') and max_y == float('-inf') and min_y == float('inf') and \
+                max_z == float('-inf') and min_z == float('inf'):
+            x = random.uniform(32, 33)
+            y = random.uniform(35, 36)
+            z = 0
+            ans = x, y, z
+            return ans
         counter = 0
         for src, node in self._graph.get_all_v().items():
             if node.location is not None:
@@ -328,18 +333,26 @@ class GraphAlgo(GraphAlgoInterface):
         y = random.uniform(max_y, min_y)
         z = random.uniform(max_z, min_z)
         if counter == 0:  # means all nodes doesn't have any location
-            ans = 0.5, 0.5, 0.5
+            x = random.uniform(32, 33)
+            y = random.uniform(35, 36)
+            z = 0
+            ans = x, y, z
         else:
             ans = x, y, z
         return ans
 
     def get_max_and_min(self):
+        """
+        This method get the max and min of the bounding box on current graph.
+        @return max and min of bounding box , o.w -inf&inf
+        """
         max_x = float('-inf')
         min_x = float('inf')
         max_y = float('-inf')
         min_y = float('inf')
         max_z = float('-inf')
         min_z = float('inf')
+        ans = max_x, max_y, max_z, min_x, min_y, min_z
         counter = 0
         for src, node in self._graph.get_all_v().items():
             if node.location is not None:
@@ -353,10 +366,8 @@ class GraphAlgo(GraphAlgoInterface):
                 min_y = y if y < min_y else min_y
                 max_z = z if z > max_z else max_z
                 min_z = z if z < min_z else min_z
-        if counter > 0:
+        if counter > 4:
             ans = max_x, max_y, max_z, min_x, min_y, min_z
-        else:
-            ans = 0.5, 0.5, 0.5, 0.5, 0.5, 0.5
         return ans
 
     def __repr__(self):
@@ -364,51 +375,3 @@ class GraphAlgo(GraphAlgoInterface):
 
     def __str__(self):
         return self._graph.__str__()
-
-
-if __name__ == '__main__':
-    # g1 = DiGraph()
-
-    # g1.add_node(0)
-    # g1.add_node(1)
-    # g1.add_node(2)
-    # g1.add_node(3)
-    # g1.add_node(4)
-
-    # g1.add_edge(0, 1, 1)
-    # g1.add_edge(1, 2, 2)
-    # g1.add_edge(2, 3, 1)
-    # # g1.add_edge(2, 1, 1)
-    # g1.add_edge(0, 4, 2)
-    # g1.add_edge(4, 0, 3)
-    # # g1.add_edge(4, 2, 0.1)
-    # g1.add_edge(2, 4, 2)
-    # g1.add_edge(0, 1, 1)
-    # g1.add_edge(1, 0, 1)
-    # g1.add_edge(0, 2, 1)
-
-    # ga = GraphAlgo(g1)
-    # print(ga.shortest_path(4, 3))
-    # print(ga.connected_component(1))
-    # print(ga.connected_components())
-
-    # file = '../data/Graphs_no_pos/G_10_80_0.json'
-    # g1 = GraphAlgo()
-    # g2 = g1.load_from_json(file_name=file)
-    # g1.plot_graph()
-
-    s = "16"
-    print(type(s))
-    s = float(s)
-    print(type(s))
-
-    # print("\n\n\n\ngraph algo is\n\n")
-    # print(f"Graph load check:{g2} \n\n")
-    # print("before remove")
-    # print(g1.get_graph().__repr__())
-    # g1.get_graph().remove_node(1)
-    # print("after remove")
-    # print(g1)
-    # print(g1.save_to_json("TalTest.txt"))
-    # print(g1.load_from_json("TalTest.txt"))
-    # print(g1)
