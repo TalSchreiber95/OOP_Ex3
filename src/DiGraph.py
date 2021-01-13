@@ -10,7 +10,8 @@ class EdgeData(object):
     * meaning if there's an edge from src to dest, then not necessarily there's an edge
     * from dest to src.
     """
-    def __init__(self, src: int, dest: int, tag: int, info: str, weight: float = 0):
+
+    def __init__(self, src: int, dest: int, tag: int = 0, info: str = "", weight: float = 0):
         self.src = src
         self.dest = dest
         self.tag = tag
@@ -26,6 +27,7 @@ class GeoLocation(object):
      * This class represents a GeoLocation as a vector <x,y,z>, aka Point3D.
      * Created for using Gui and printing the graph on the axes
     """
+
     def __init__(self, location: tuple = None):
         if location is not None:
             if len(location) == 3:
@@ -36,6 +38,7 @@ class GeoLocation(object):
     def distance(self, other):
         """
         * This method was made to get the distance between two vector
+        @return: distance
         """
         d1 = (self.x - other.x) ** 2  # (x1-x2)^2
         d2 = (self.y - other.y) ** 2
@@ -55,6 +58,7 @@ class NodeData(object):
      * A node has a unique key, a tag,
      * Metadata (info=String) ,weight and location.
     """
+
     def __init__(self, key: int, tag=0, info="", location: tuple = None, weight=0):
         self.key = key
         self.tag = tag
@@ -82,6 +86,9 @@ class NodeData(object):
         """
         * This "less then" comparator was made to compare the two given node's weight for helping us in shortest path
         * method
+        @return: 1 if node isn't NodeData type OR this.node bigger then other.node,
+                -1 this.node smaller then other.node,
+                0 if both node are equal.
         """
         if other is None or not isinstance(other, NodeData):
             return 1
@@ -103,6 +110,7 @@ class DiGraph(GraphInterface):
      * The graph supports some methodology like adding/removing nodes/edges from the graph,
      * connecting nodes on the graph and holding counts of edge size and node size.
     """
+
     def __init__(self):
         self.nodes = dict()
         self.outEdges = dict()
@@ -152,7 +160,7 @@ class DiGraph(GraphInterface):
 
     def add_edge(self, id1: int, id2: int, weight: float) -> bool:
         """
-         * Connects an edge with weight w between node src to node dest.
+        * Connects an edge with weight w between node src to node dest.
         Adds an edge to the graph.
         Note: If the edge already exists or one of the nodes dose not exists the functions will do nothing
         @param id1: src node of the edge
@@ -177,7 +185,6 @@ class DiGraph(GraphInterface):
         return self.nodes.get(key)
 
     def add_node(self, node_id: int, pos: tuple = None) -> bool:
-
         """
         * adds a new node to the graph with the given node_data.
         * Note: if the node id already exists the node will not be added
@@ -260,23 +267,3 @@ class DiGraph(GraphInterface):
 
     def __str__(self):
         return "\n|V|={} , |E|={} , MC={}".format(self.sizeV, self.sizeE, self.sizeMc)
-
-
-if __name__ == '__main__':
-    g = DiGraph()  # creates an empty directed graph
-    for n in range(5):
-        g.add_node(n)
-    g.add_edge(0, 3, 2)
-    g.add_edge(1, 0, 2.1)
-    g.add_edge(3, 2, 1.4)
-    g.add_edge(1, 5, 1.1)
-    g.add_edge(3, 4, 1.9)
-    g.remove_edge(0, 3)
-    g.add_edge(0, 3, 1.2)
-    print(type(g.outEdges[1][0]))
-    print(g.remove_node(0))
-    print(g.remove_node(0))
-    print(g)  # prints the __repr__ (func output)
-    print(g.get_all_v())  # prints a dict with all the graph's vertices.
-    print(g.all_in_edges_of_node(1))
-    print(g.all_out_edges_of_node(1))
