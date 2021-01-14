@@ -6,123 +6,90 @@ from src.DiGraph import DiGraph, EdgeData
 from src.GraphAlgo import GraphAlgo
 
 
-# This test class will test the algorithms applied to a given weighted, directed graph data structure.
-# I'd like to do the following test:
-# Create a randomly connected graph, with 10 nodes and [30, 46] edges
-# Consider an arbitrary node 'src' from a SCC on the graph.
-# Find A strongly Connected Component(SCC) that has more than 3 Nodes. TODO: First test - DONE
-# Find all shortest paths(They all exist!), from 'src' to all nodes on that SCC. TODO: Second test
-# TODO: All of these tests don't include save() and load() methods!
+# This test class behaves as if any graph was given -
+# 1. Break it down into Strongly connected components and test them:
+#    I know connected_components() works when nodes do not belong to 2 different SCC's.
+# 2. Get the largest SCC from the graph.
+# 3. Execute shortest_path() from 1 specific node 'src' to all other nodes from it's SCC.
+#    I know shortest_path() works AND connected_component(id) works when all paths are valid
+#    and nodes do not belong to 2 different SCC.
+
 class GraphAlgoTest(unittest.TestCase):
     if __name__ == '__main__':
         unittest.main()
 
-    def make_graph(self) -> object:
-        V = 100
-        E = V * 2
-        return self.graph_creator(V, r.randint(200, 300))
+    # This test method can test a random graph with 3 SCC's if no params are given
+    # If given @param 'graph' as DiGraph(), then testing the shortest_path method will
+    # Get the largest SCC and test all routes (which must exist) on that SCC.
+    # If scc param is None - will take the largest SCC from the given graph, or the example graph.
+    def test_shortest_path(self, SCC: list = None, graph: object = None):
+        V = r.randint(20, 30)
+        if SCC is None:
+            if graph is not None:
+                SCC = self.get_max_scc(graph)
+            else:
+                graph = self.make_graph(V, V*4)
+                SCC = self.get_max_scc(graph)
+        elif graph is None:
+            graph = self.make_graph(V, V*4)
+        if SCC is not None and graph is not None:
+            try:
+                algo = GraphAlgo(graph)
+                first_node = SCC[0]
 
-    def test_load_from_json(self):
-        self.fail()
+                for node in SCC:
+                    if node.key != first_node.key:
+                        sp1 = algo.shortest_path(first_node.key, node.key)
+                        assert len(sp1[1]) > 1
+                        dist1 = sp1[1][len(sp1[1]) - 1].weight
+                        assert dist1 == sp1[0]
+                        sp2 = algo.shortest_path(node.key, first_node.key)
+                        assert len(sp2[1]) > 1
+                        dist2 = sp2[1][len(sp2[1]) - 1].weight
+                        assert dist2 == sp2[0]
+            except AssertionError as e:
+                print(e)
+                self.fail("shortest_path_test failed with graph {}".format(algo.get_graph().__str__()))
 
-    def test_save_to_json(self):
-        self.fail()
-
-    # This test takes a graph and a source node and test it's connectivity component
-    # It relies on the fact that there are 3 or more nodes in the SCC of 'src',
-    # But if not - The test will blindly pass
-    def connected_component_test(self, graph: object = None, src: int = 0):
-        try:
-            ga = GraphAlgo(graph)
-            print("Test connected_component() {}".format(ga.connected_component(src)))
-
-            original_SCC = ga.connected_component(src)
-            original_SCC = ga.connected_component(src)
-            SCC2 = ga.connected_component(src)
-            assert len(original_SCC) == len(SCC2)
-
-            for key in ga.get_graph().get_all_v():
-                node = ga.get_graph().get_node(key)
-                if node not in original_SCC:  # Then there is no bidirectional path between them!
-                    sp1 = ga.shortest_path(src, key)
-                    sp2 = ga.shortest_path(key, src)
-                    assert len(sp1[1]) == 0 or len(sp2[1]) == 0
-                    break  # Do this once
-
-        except Exception as e:
-            print(e)
-            self.fail(e)
-
-    def connected_components_test(self, graph: object = None):
+    def test_connected_components(self, graph: object = None):
         if graph is None:
-            return
+            V = r.randint(20, 30)
+            graph = self.make_graph(V, V*2)
         try:
             print("Test connected_components()")
             ga = GraphAlgo(graph)
-
+            if ga.get_graph().v_size() == 0:
+                return
             ALL_SCC = ga.connected_components()
+            ALL_SCC2 = ga.connected_components()
+            assert len(ALL_SCC) == len(ALL_SCC2)
             print(ALL_SCC)
+            print("SCC count is {}".format(len(ALL_SCC)))
             node = ALL_SCC[0][0]
             ALL_SCC.pop(0)
 
             # Check that a node in a certain SCC does NOT belong to another SCC.
             for scc in ALL_SCC:
                 assert node not in scc
-                self.connected_component_test(ga.get_graph(), scc[0].key)  # TODO: Test each SCC
-                # print("{} is not in {}".format(node.key, scc))
+                # self.connected_component_test(ga.get_graph(), scc[0].key)  # TODO: Test each SCC with shortest_path()
 
         except AssertionError as e:
             print(e)
             print("connected_components() Failed!")
             self.fail()
 
-    def test_plot_graph(self):
-        self.fail()
+    def test_algorithms(self, graph: object = None):
+        if graph is None:
+            graph = self.example_graph()
 
-    def shortest_path_test(self, g: object = None, src: int = 0, nodes: list = None):
-        if nodes is None or g is None:
-            self.fail("Either the graph or the node list are None")
-            return
+        algo = GraphAlgo(graph)
+        self.test_connected_components(algo.get_graph())  # Tests ALL SCC's On the graph!
 
-        ga = GraphAlgo(g)
-        try:
-            for node in nodes:
-                if node.key != src:
-                    sp = ga.shortest_path(src, node.key)
-                    assert (sp[0] > 0)  # The distance is positive.
-                    assert (len(sp[1]) > 1)  # The list must contain more than 2 nodes.
+        SCC = self.get_max_scc(algo.get_graph())  # Get the largest SCC and test shortest_path() method on it!
 
-            sp = ga.shortest_path(src, src)
-            assert (sp[0] == 0)
-            assert (len(sp[1]) == 0)
+        self.test_shortest_path(SCC, graph=algo.get_graph())  # Test all shortest paths on SCC (They All Exist!)
 
-
-        except AssertionError as e:
-            print("shortest_path() failed!")
-            print(e)
-
-    def test_algorithms(self):
-        ga = GraphAlgo(self.make_graph())  # Get a random graph.
-        print(ga.get_graph().__str__())
-
-        # Find the first SCC list with 4 or more nodes in it
-        # If there is none -> continue with any scc that we get.
-        for i in range(ga.get_graph().v_size()):
-            scc = ga.connected_component(i)
-            size_of_scc = len(scc)
-            if size_of_scc >= 3:
-                break
-
-        # Define a source node 'src' as the first node from the above SCC.
-        src = scc[0].key
-
-        # TODO: Test #2: Test all shortest paths on the given node list.
-        # Note: All paths must exist by definition of SCC.
-        self.shortest_path_test(ga.get_graph(), src, scc)  # test_shortest_path()
-
-        # TODO: Test #3: Remove a node that is in scc, from the graph, and compare with the new list
-
-        self.connected_components_test(ga.get_graph())  # This test includes testing ALL SCC's
+    """Graph creation methods:"""
 
     def graph_creator(self, node_size: int = 0, edge_size: int = 0) -> object:
         g1 = DiGraph()
@@ -130,14 +97,63 @@ class GraphAlgoTest(unittest.TestCase):
         for i in range(0, node_size):
             g1.add_node(i)
 
+        nodes = self.nodes_to_array(g1)
+
         counter = 0
         while counter < edge_size:
-
             r1 = int((r.random() * node_size))
             r2 = int((r.random() * node_size))
             w = (r.random() * 10)
-            edge = EdgeData(r1, r2, w)
-            if edge not in g1.all_out_edges_of_node(r1):
-                g1.add_edge(edge.src, edge.dest, edge.weight)
+            if g1.add_edge(nodes[r1], nodes[r2], w):
                 counter += 1
         return g1
+
+    def nodes_to_array(self, graph: object = None) -> list:
+        if graph is None:
+            return []
+
+        ans = []
+
+        for key in graph.get_all_v():
+            ans.append(key)
+
+        return ans
+
+    def make_graph(self, V: int = 0, E: int = 0) -> object:
+        V = V  # Full graph of V vertices
+        E = E
+        if E > V * (V - 1):
+            E = V * (V - 1)
+        return self.graph_creator(V, E)
+
+    def example_graph(self) -> object:
+        g = DiGraph()
+        for i in range(7):
+            g.add_node(i)
+
+        g.add_edge(0, 2, 1)
+        g.add_edge(2, 0, 1)
+        g.add_edge(3, 0, 1)
+        g.add_edge(0, 3, 1)
+        g.add_edge(6, 0, 1)
+        g.add_edge(4, 2, 1)
+        g.add_edge(4, 5, 1)
+        g.add_edge(1, 4, 1)
+        g.add_edge(5, 1, 1)
+
+        return g
+
+    def get_max_scc(self, graph: object = None) -> list:
+        if graph is None:
+            return None
+        algo = GraphAlgo(graph
+                         )
+        ALL_SCC = algo.connected_components()
+        max_scc = 0
+        MAX_SCC = []
+
+        for scc in ALL_SCC:
+            if len(scc) > max_scc:
+                max_scc = len(scc)
+                MAX_SCC = scc
+        return MAX_SCC
