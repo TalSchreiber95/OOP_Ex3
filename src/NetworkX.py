@@ -1,11 +1,8 @@
-import timeit
-
 import networkx as nx
 
 from DiGraph import DiGraph
 from GraphAlgo import GraphAlgo
-import random as r
-import time
+import time as timeit
 
 
 def compare_sccs(g_algo_nx: nx.DiGraph, laps):
@@ -14,11 +11,11 @@ def compare_sccs(g_algo_nx: nx.DiGraph, laps):
     sum_times = 0
 
     for i in range(laps):
-        start = timeit.default_timer()
+        start = timeit.time()
         # s = g_algo.connected_components()
         # g_algo.connected_components()
         nx.kosaraju_strongly_connected_components(g_algo_nx)
-        time = timeit.default_timer() - start
+        time = timeit.time() - start
         sum_times += time
         times.append(time)
 
@@ -41,10 +38,10 @@ def compare_shortest_path(g_algo_nx: nx.DiGraph, laps):
     sum_times = 0
 
     for i in range(laps):
-        start = timeit.default_timer()
+        start = timeit.time()
         # s = g_algo.shortest_path(min_node, max_node)
         s = nx.dijkstra_path(g_algo_nx,min_node, max_node)
-        time = timeit.default_timer() - start
+        time = timeit.time() - start
         sum_times += time
         times.append(time)
 
