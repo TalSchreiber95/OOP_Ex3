@@ -1,5 +1,5 @@
 # Welcome to our OOP_Ex3 Python project!
-In this final OOP Course project we are here to present our last data structure design, which was written in Java,
+In this final OOP Course assignment we are here to present our last data structure design, which was written in Java,
 Redesigned and rewritten in Python!
 In total writing in python was very fun and interesting (Both of us writers write usually in java)
 
