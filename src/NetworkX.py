@@ -1,78 +1,67 @@
+import timeit
+
 import networkx as nx
 
-from src.DiGraph import DiGraph
-from src.GraphAlgo import GraphAlgo
+from DiGraph import DiGraph
+from GraphAlgo import GraphAlgo
 import random as r
 import time
 
 
-# class Network:
-#
-#     def __init__(self):
-#         self.G = nx.DiGraph()
-#
-#     def load(self, file_path):
-#         algo = GraphAlgo()
-#         algo.load_from_json(file_path)
-#         # print(algo.__repr__)
-#         for i in algo.get_graph().get_all_v().keys():
-#             self.G.add_node(i)
-#         for i in algo.get_graph().get_all_v().keys():
-#             for j, w in algo.get_graph().all_out_edges_of_node(i).items():
-#                 self.G.add_edge(i, j, weight=w.weight)
-#         return self.G
-#
+def compare_sccs(g_algo_nx: nx.DiGraph, laps):
 
-# def graph_creator(node_size: int = 0, edge_size: int = 0) -> object:
-#     g1 = DiGraph()
-#
-#     for i in range(0, node_size):
-#         g1.add_node(i)
-#
-#     nodes = nodes_to_array(g1)
-#
-#     counter = 0
-#     while counter < edge_size:
-#         r1 = int((r.random() * node_size))
-#         r2 = int((r.random() * node_size))
-#         w = (r.random() * 10)
-#         if g1.add_edge(nodes[r1], nodes[r2], w):
-#             counter += 1
-#     return g1
-#
-#
-# def nodes_to_array(graph: object = None) -> list:
-#     if graph is None:
-#         return []
-#
-#     ans = []
-#
-#     for key in graph.get_all_v():
-#         ans.append(key)
-#
-#     return ans
-#
-#
-# def make_graph(V: int = 0, E: int = 0) -> object:
-#     V = V  # Full graph of V vertices
-#     E = E
-#     if E > V * (V - 1):
-#         E = V * (V - 1)
-#     return graph_creator(V, E)
+    times = []
+    sum_times = 0
+
+    for i in range(laps):
+        start = timeit.default_timer()
+        # s = g_algo.connected_components()
+        # g_algo.connected_components()
+        nx.kosaraju_strongly_connected_components(g_algo_nx)
+        time = timeit.default_timer() - start
+        sum_times += time
+        times.append(time)
+
+    min_time = min(times)
+    max_time = max(times)
+    avg = sum_times/laps
+    # print("All Scc's in the Graph:", s)
+    return "Min Time: " + "{:.6f}".format(min_time) + " Max Time: " + "{:.6f}".format(max_time) + " Avg Time: " + \
+           "{:.6f}".format(avg)
+
+
+def compare_shortest_path(g_algo_nx: nx.DiGraph, laps):
+
+    # curr_graph = g_algo_nx
+    keys = list(g_algo_nx.nodes.keys())
+    min_node = min(keys)
+    max_node = max(keys)
+
+    times = []
+    sum_times = 0
+
+    for i in range(laps):
+        start = timeit.default_timer()
+        # s = g_algo.shortest_path(min_node, max_node)
+        s = nx.dijkstra_path(g_algo_nx,min_node, max_node)
+        time = timeit.default_timer() - start
+        sum_times += time
+        times.append(time)
+
+    min_time = min(times)
+    max_time = max(times)
+    avg = sum_times/laps
+    print("Shortest Path between src:", min_node, "and dest:", max_node, "is:" + str(s))
+    return "Min Time: " + "{:.6f}".format(min_time) + " Max Time: " + "{:.6f}".format(max_time) + " Avg Time: " + \
+           "{:.6f}".format(avg)
+
 
 def load_graph(file_path: str = "") -> object:
     g = DiGraph()
     algo = GraphAlgo(g)
     algo.load_from_json(file_path)
-
-    # G = nx.DiGraph()
-    #
-    # for i in algo.get_graph().get_all_v().keys():
-    #     G.add_node(i)
-    # for i in algo.get_graph().get_all_v().keys():
-    #     for j, w in algo.get_graph().all_out_edges_of_node(i).items():
-    #         G.add_edge(i, j, weight=w.weight)
     return transfer_to_nx(algo.get_graph())
+
 
 def transfer_to_nx(graph: object = None) -> object:
     if graph is None:
@@ -81,56 +70,29 @@ def transfer_to_nx(graph: object = None) -> object:
     algo = GraphAlgo(graph)
     # algo.load_from_json(file_path)
 
-    G = nx.DiGraph()
+    GnX = nx.DiGraph()
 
     for i in algo.get_graph().get_all_v().keys():
-        G.add_node(i)
+        GnX.add_node(i)
     for i in algo.get_graph().get_all_v().keys():
         for j, w in algo.get_graph().all_out_edges_of_node(i).items():
-            G.add_edge(i, j, weight=w.weight)
-    return G
+            GnX.add_edge(i, j, weight=w.weight)
+    return GnX
 
 
 if __name__ == '__main__':
-    # nx = Network()
-    # nx.load('../data/A5')
-    # # print(dir(nx.G))
 
-    # g = DiGraph()
-    # algo = GraphAlgo(g)
-    # algo.load_from_json('../data/Graphs_random_pos/G_30000_240000_2.json')
+    graph = "../data/Graphs_random_pos/G_30000_240000_2.json"
+    G1 = load_graph(graph)
+    G2 = load_graph(graph)
 
+    # algo.load_from_json(graph)
+    print("********** Start of Testing SCC's **********\n")
+    print('\n', compare_sccs(G1, 10), '\n')
+    print("********** End of Testing SCC's **********\n\n")
 
-    # # Testing shortest_path
-    # print("Start")
-    # start = time.time()
-    # print(nx.dijkstra_path(G, 0, 993))
-    # end = time.time() - start
-    # print(end)
-    # print("End")
+    # algo.load_from_json(graph)
+    print("********** Start of Testing Shortest Path **********\n")
+    print('\n', compare_shortest_path(G2, 10), '\n')
+    print("********** End of Testing Shortest Path **********\n\n")
 
-    # G = transfer_to_nx(make_graph(V, E))
-
-    # Testing SCC's
-    # generator = max(nx.kosaraju_strongly_connected_components(G))
-    # # print(dir(generator))
-    # print(generator.pop())
-    # print("End")
-
-    print("Start")
-    start = time.time()
-    algo = GraphAlgo()
-    algo.load_from_json('../data/Graphs_random_pos/G_30000_240000_2.json')
-
-    G = load_graph('../data/Graphs_random_pos/G_30000_240000_2.json')  # Returns nx.DiGraph object.
-
-    for scc in nx.kosaraju_strongly_connected_components(G):
-        print(scc)
-
-    end = time.time() - start
-    print(end)
-    print("--------------------------------------------")
-    for scc in algo.connected_components():
-        print(scc)
-    end = time.time() - start
-    print(end)
