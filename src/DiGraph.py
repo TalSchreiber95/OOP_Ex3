@@ -92,36 +92,6 @@ class NodeData(object):
         else:
             self.location = None
 
-    # def __cmp__(self, other):
-    #     """
-    #     * This comparator was made to compare the two given node's weight for helping us in shortest path method
-    #     """
-    #     if other is None or not isinstance(other, NodeData):
-    #         return 1
-    #     if self.weight > other.weight:
-    #         return 1
-    #     elif self.weight < other.weight:
-    #         return -1
-    #     else:
-    #         return 0
-
-    # def __lt__(self, other):
-    #     """
-    #     * This "less then" comparator was made to compare the two given node's weight for helping us in shortest path
-    #     * method
-    #     @return: 1 if node isn't NodeData type OR this.node bigger then other.node,
-    #             -1 this.node smaller then other.node,
-    #             0 if both node are equal.
-    #     """
-    #     if other is None or not isinstance(other, NodeData):
-    #         return 1
-    #     if self.weight > other.weight:
-    #         return 1
-    #     elif self.weight < other.weight:
-    #         return -1
-    #     else:
-    #         return 0
-
     def __repr__(self):
         return "{} w:({})".format(self.key, self.weight)
 
