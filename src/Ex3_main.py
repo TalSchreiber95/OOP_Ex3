@@ -53,23 +53,23 @@ def check1():
        This function tests the naming (main methods of the GraphAlgo class, as defined in GraphAlgoInterface.
     :return:
     """
+
     g_algo = GraphAlgo()  # init an empty graph - for the GraphAlgo
     file = "../data/T0.json"
     g_algo.load_from_json(file)  # init a GraphAlgo from a json file
     print(g_algo.connected_components())
-    # print(g_algo.shortest_path(0, 3))
-    # print(g_algo.shortest_path(3, 1))
+    print(g_algo.shortest_path(0, 3))
+    print(g_algo.shortest_path(3, 1))
     g_algo.save_to_json(file + '_saved')
 
-    test = g_algo.get_graph()  # T0.json
-    our_node = None
-    for node in test.get_all_v().values():
-        our_node = node
-        break
-
-    if test.remove_node(our_node.key):
-        temp_algo = GraphAlgo(test)
-
+    # test = g_algo.get_graph()  # T0.json
+    # our_node = None
+    # for node in test.get_all_v().values():
+    #     our_node = node
+    #     break
+    #
+    # if test.remove_node(our_node.key):
+    #     temp_algo = GraphAlgo(test)
 
     g_algo.plot_graph()
 
