@@ -5,9 +5,8 @@ import matplotlib.pyplot as plt
 from typing import List
 
 from GraphAlgoInterface import GraphAlgoInterface
-from src.DiGraph import DiGraph, GeoLocation
-from src.GraphInterface import GraphInterface
-from queue import PriorityQueue
+from DiGraph import DiGraph, GeoLocation
+from GraphInterface import GraphInterface
 from queue import Queue
 
 
@@ -116,13 +115,13 @@ class GraphAlgo(GraphAlgoInterface):
         self.reset_tags()
         self.set_weights_infinity()
 
-        prev_node = dict()  # A map that stores: {key(int), caller(Node)} (Which node called which)
-        pq = PriorityQueue()  # A queue to prioritize nodes with lower weight
+        prev_node = dict()  # A map that stores: {key(int): caller(Node)} (Which node called which)
+        pq = Queue()  # A queue to prioritize nodes with lower weight
         visited = dict()  # Keep track of visited nodes
 
         total_dist = 0.0
         destination_found = False
-        curr = self._graph.get_node(id1)
+        curr = self._graph.get_node(src)
         curr.weight = total_dist
         visited[curr.key] = True
 
@@ -133,8 +132,8 @@ class GraphAlgo(GraphAlgoInterface):
             curr = pq.get()  # Pop the next node with the lowest weight O(log(n))
             neighbors = self._graph.all_out_edges_of_node(curr.key)  # Neighbors of curr node
             for i in neighbors:  # Iterate over neighbors of curr
-                out_edge = neighbors[i]
-                neighbor = self._graph.get_node(out_edge.dest)
+                out_edge = neighbors[i]  # out_edge: EdgeData
+                neighbor = self._graph.get_node(out_edge.dest)  # neighbor: NodeData
                 if not visited.get(neighbor.key):  # Process node if not visited
                     total_dist = curr.weight + out_edge.weight
                     if total_dist < neighbor.weight:
@@ -164,7 +163,7 @@ class GraphAlgo(GraphAlgoInterface):
             return None
         ans = [self._graph.get_node(dest)]
         next_node = node_map.get(dest)
-
+        ans.append(next_node)
         while next_node.key is not src:  # Backtrack from dest to src
             ans.append(node_map.get(next_node.key))
             next_node = node_map.get(next_node.key)
