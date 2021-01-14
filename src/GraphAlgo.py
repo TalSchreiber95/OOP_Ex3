@@ -52,7 +52,7 @@ class GraphAlgo(GraphAlgoInterface):
             for edge in load["Edges"]:
                 graphJson.add_edge(id1=edge["src"], id2=edge["dest"], weight=edge["w"])
             self._graph = graphJson
-            print("load successes")
+            # print("load successes")
         except Exception as e:
             print(e)
             print("load failed")
@@ -70,7 +70,7 @@ class GraphAlgo(GraphAlgoInterface):
         with open(file_name, "w") as jsonFile:
             try:
                 d = {"Edges": [], "Nodes": []}
-                for src in self._graph.outEdges.keys():
+                for src in self._graph.out_edges.keys():
                     for dst, w in self._graph.all_out_edges_of_node(src).items():
                         d["Edges"].append({"src": src, "w": w.weight, "dest": dst})
                 for key, value in self._graph.nodes.items():
@@ -82,7 +82,7 @@ class GraphAlgo(GraphAlgoInterface):
                 s = s.replace(" ", "")
                 s = s.replace("'", "\"")
                 jsonFile.write(s)
-                print("Save Json was succeeded ")
+                # print("Save Json was succeeded ")
             except Exception as e:
                 print("Save Json was failed ")
                 print(e)
