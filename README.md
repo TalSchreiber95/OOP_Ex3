@@ -17,7 +17,7 @@ This class also shows in a GUI window a graph of the form G = (V, E)
 
 ### An Algorithm Comparison Table.
 > A table of the algorithms mentioned above, and their total, min, max and avrage over 10 iterations of runnning large graphs.
-You can find this table in our Wiki pages found here https://github.com/TalSchreiber95/OOP_Ex3/wiki/Comparisons-with-other-environments-and-libs-***FIX***
+You can find this table in our Wiki pages found here https://github.com/TalSchreiber95/OOP_Ex3/wiki/Comparisons-with-other-environments-and-libs
 
 
 # DiGraph classes methods:
