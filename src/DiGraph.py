@@ -21,6 +21,19 @@ class EdgeData(object):
     def getWeight(self) -> float:
         return self.weight
 
+    def __eq__(self, other):
+        if other is None:
+            return 1
+        if not isinstance(other, EdgeData):
+            return 1
+        if self.src == other.src and self.dest == other.dest and self.weight == other.weight:
+            return 0
+        else:
+            return 1
+
+    def __repr__(self):
+        return "{} ({})".format( self.dest, self.weight)
+
 
 class GeoLocation(object):
     """
@@ -34,6 +47,16 @@ class GeoLocation(object):
                 self.x = location[0]
                 self.y = location[1]
                 self.z = location[2]
+
+    def __eq__(self, other):
+        if other is None:
+            return 1
+        if not isinstance(other, GeoLocation):
+            return 1
+        if self.x == other.x and self.y == other.y and self.z == other.z:
+            return 0
+        else:
+            return 1
 
     def distance(self, other):
         """
@@ -113,23 +136,44 @@ class DiGraph(GraphInterface):
 
     def __init__(self):
         self.nodes = dict()
-        self.outEdges = dict()
-        self.inEdges = dict()
-        self.sizeE = 0
-        self.sizeV = 0
-        self.sizeMc = 0
+        self.out_edges = dict()
+        self.in_edges = dict()
+        self.e_size = 0
+        self.v_size = 0
+        self.mc_size = 0
+
+    def __eq__(self, other):
+        # print("EQ OF DiGraph!")
+        if other is None:
+            return False
+        if not isinstance(other, DiGraph):
+            return False
+
+        if self.v_size != other.v_size or self.e_size != other.e_size or self.mc_size != other.mc_size:
+            return False
+        are_equal = True
+
+        for key, node in other.get_all_v().items():
+            our_node = self.get_node(key)
+            if node.key == our_node.key:
+                if not our_node.location == node.location:
+                    are_equal = False
+            for e, edge in other.all_out_edges_of_node(key).items():
+                if not edge == self.out_edges.get(key):
+                    are_equal = False
+        return are_equal
 
     def v_size(self) -> int:
         """
         @return: The number of vertices in this graph
         """
-        return self.sizeV
+        return self.v_size
 
     def e_size(self) -> int:
         """
         @return: The number of edges in this graph
         """
-        return self.sizeE
+        return self.e_size
 
     def get_all_v(self) -> dict:
         """
@@ -143,20 +187,20 @@ class DiGraph(GraphInterface):
         * return a dictionary of all the nodes connected to (into) node_id ,
         * each node is represented using a pair (other_node_id, weight)
         """
-        return self.inEdges.get(id1)
+        return self.in_edges.get(id1)
 
     def all_out_edges_of_node(self, id1: int) -> dict:
         """
         * return a dictionary of all the nodes connected from node_id , each node is represented using a pair
         * (other_node_id, weight)
         """
-        return self.outEdges.get(id1)
+        return self.out_edges.get(id1)
 
     def get_mc(self) -> int:
         """
         @return: The current version of this graph.
         """
-        return self.sizeMc
+        return self.mc_size
 
     def add_edge(self, id1: int, id2: int, weight: float) -> bool:
         """
@@ -172,13 +216,13 @@ class DiGraph(GraphInterface):
             return False
         if weight < 0:
             return False
-        if id2 in self.outEdges.get(id1) or id1 in self.inEdges.get(id2):
+        if id2 in self.out_edges.get(id1) or id1 in self.in_edges.get(id2):
             return False  # If edge (src,dest) did not exist before, increment edgeSize.
-        self.sizeE += 1
-        self.sizeMc += 1
+        self.e_size += 1
+        self.mc_size += 1
         edge = EdgeData(src=id1, dest=id2, tag=0, info=f"{id1}-->{id2}", weight=weight)
-        self.inEdges[id2][id1] = edge
-        self.outEdges[id1][id2] = edge
+        self.in_edges[id2][id1] = edge
+        self.out_edges[id1][id2] = edge
         return True
 
     def get_node(self, key):
@@ -195,10 +239,10 @@ class DiGraph(GraphInterface):
         if node_id in self.nodes:
             return False
         self.nodes[node_id] = NodeData(key=node_id, location=pos)
-        self.outEdges[node_id] = {}
-        self.inEdges[node_id] = {}
-        self.sizeV += 1
-        self.sizeMc += 1
+        self.out_edges[node_id] = {}
+        self.in_edges[node_id] = {}
+        self.v_size += 1
+        self.mc_size += 1
         return True
 
     def remove_node(self, node_id: int) -> bool:
@@ -211,19 +255,19 @@ class DiGraph(GraphInterface):
         """
         if node_id not in self.nodes:
             return False
-        for i in self.outEdges.keys():
-            if node_id in self.outEdges[i].keys():
-                del self.outEdges[i][node_id]
-                self.sizeE -= 1
-        for j in self.inEdges.keys():
-            if node_id in self.inEdges[j].keys():
-                del self.inEdges[j][node_id]
-                self.sizeE -= 1
-        self.outEdges.pop(node_id)
-        self.inEdges.pop(node_id)
+        for i in self.out_edges.keys():
+            if node_id in self.out_edges[i].keys():
+                del self.out_edges[i][node_id]
+                self.e_size -= 1
+        for j in self.in_edges.keys():
+            if node_id in self.in_edges[j].keys():
+                del self.in_edges[j][node_id]
+                self.e_size -= 1
+        self.out_edges.pop(node_id)
+        self.in_edges.pop(node_id)
         self.nodes.pop(node_id)
-        self.sizeV -= 1
-        self.sizeMc += 1
+        self.v_size -= 1
+        self.mc_size += 1
         return True
 
     def remove_edge(self, node_id1: int, node_id2: int) -> bool:
@@ -235,20 +279,21 @@ class DiGraph(GraphInterface):
         @return: True if the edge was removed successfully, False o.w.
         """
         if node_id1 in self.nodes and node_id2 in self.nodes and node_id2 != node_id1:
-            if node_id2 in self.outEdges[node_id1] and node_id1 in self.inEdges[node_id2]:
-                del self.outEdges[node_id1][node_id2]
-                del self.inEdges[node_id2][node_id1]
-                self.sizeE -= 1
+            if node_id2 in self.out_edges[node_id1] and node_id1 in self.in_edges[node_id2]:
+                del self.out_edges[node_id1][node_id2]
+                del self.in_edges[node_id2][node_id1]
+                self.e_size -= 1
+                self.mc_size += 1
                 return True
         return False
 
     def __repr__(self):
-        s = "Graph info:\n|V|={} , |E|={} , MC={}\n".format(self.sizeV, self.sizeE, self.sizeMc)
+        s = "Graph info:\n|V|={} , |E|={} , MC={}\n".format(self.v_size, self.e_size, self.mc_size)
         for key in self.nodes.keys():
             s += "{} --> in [".format(self.nodes[key])
             n = 0
             for w in self.all_in_edges_of_node(key).keys():
-                s += "{}({})".format(str(w), self.inEdges[key][w].weight)
+                s += "{}({})".format(str(w), self.in_edges[key][w].weight)
                 s += " ,"
                 n += 1
             if n > 0:
@@ -257,7 +302,7 @@ class DiGraph(GraphInterface):
             s += "{} --> Out [".format(self.nodes[key])
             n = 0
             for w in self.all_out_edges_of_node(key).keys():
-                s += "{}({})".format(str(w), self.outEdges[key][w].weight)
+                s += "{}({})".format(str(w), self.out_edges[key][w].weight)
                 s += " ,"
                 n += 1
             if n > 0:
@@ -266,4 +311,4 @@ class DiGraph(GraphInterface):
         return s
 
     def __str__(self):
-        return "\n|V|={} , |E|={} , MC={}".format(self.sizeV, self.sizeE, self.sizeMc)
+        return "\n|V|={} , |E|={} , MC={}".format(self.v_size, self.e_size, self.mc_size)

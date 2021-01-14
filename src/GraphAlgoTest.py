@@ -2,7 +2,7 @@ import unittest
 
 import random as r
 
-from src.DiGraph import DiGraph, EdgeData
+from src.DiGraph import DiGraph
 from src.GraphAlgo import GraphAlgo
 
 
@@ -28,10 +28,10 @@ class GraphAlgoTest(unittest.TestCase):
             if graph is not None:
                 SCC = self.get_max_scc(graph)
             else:
-                graph = self.make_graph(V, V*4)
+                graph = self.make_graph(V, V * 4)
                 SCC = self.get_max_scc(graph)
         elif graph is None:
-            graph = self.make_graph(V, V*4)
+            graph = self.make_graph(V, V * 4)
         if SCC is not None and graph is not None:
             try:
                 algo = GraphAlgo(graph)
@@ -47,6 +47,10 @@ class GraphAlgoTest(unittest.TestCase):
                         assert len(sp2[1]) > 1
                         dist2 = sp2[1][len(sp2[1]) - 1].weight
                         assert dist2 == sp2[0]
+
+                # algo.get_graph().add_node(-10)
+                # sp = algo.shortest_path(first_node.key, algo.get_graph().get_node(-10))
+                # assert sp[0] == float('inf') and len(sp[1]) == 0
             except AssertionError as e:
                 print(e)
                 self.fail("shortest_path_test failed with graph {}".format(algo.get_graph().__str__()))
@@ -54,17 +58,14 @@ class GraphAlgoTest(unittest.TestCase):
     def test_connected_components(self, graph: object = None):
         if graph is None:
             V = r.randint(20, 30)
-            graph = self.make_graph(V, V*2)
+            graph = self.make_graph(V, V * 2)
         try:
-            print("Test connected_components()")
             ga = GraphAlgo(graph)
-            if ga.get_graph().v_size() == 0:
+            if ga.get_graph().v_size == 0:
                 return
             ALL_SCC = ga.connected_components()
             ALL_SCC2 = ga.connected_components()
             assert len(ALL_SCC) == len(ALL_SCC2)
-            print(ALL_SCC)
-            print("SCC count is {}".format(len(ALL_SCC)))
             node = ALL_SCC[0][0]
             ALL_SCC.pop(0)
 
@@ -83,11 +84,36 @@ class GraphAlgoTest(unittest.TestCase):
             graph = self.example_graph()
 
         algo = GraphAlgo(graph)
+
         self.test_connected_components(algo.get_graph())  # Tests ALL SCC's On the graph!
 
         SCC = self.get_max_scc(algo.get_graph())  # Get the largest SCC and test shortest_path() method on it!
 
         self.test_shortest_path(SCC, graph=algo.get_graph())  # Test all shortest paths on SCC (They All Exist!)
+
+    def test_save_load(self):
+
+        algo = GraphAlgo()
+
+        assert algo.load_from_json('../data/Graphs_no_pos/G_10_80_0.json')
+        assert algo.load_from_json('../data/Graphs_on_circle/G_10_80_1.json')
+        assert algo.load_from_json('../data/Graphs_random_pos/G_10_80_2.json')
+
+        test = algo.get_graph()  # G_10_80_2
+        our_node = None
+        for node in test.get_all_v().values():
+            our_node = node
+            break
+
+        assert test.remove_node(our_node.key)
+        algo.save_to_json('../data/G_10_80_0_TEST.json')
+
+        algo.load_from_json('../data/Graphs_no_pos/G_10_80_0.json')
+        g1 = algo.get_graph()
+        algo.load_from_json('../data/G_10_80_0_TEST.json')
+        g2 = algo.get_graph()
+
+        assert not g1 == g2
 
     """Graph creation methods:"""
 
