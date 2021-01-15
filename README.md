@@ -84,7 +84,7 @@ This is done by reading or writing into a file using a json format.
 
 
 # How To Run
-* Download project zip file from **https://github.com/ItaySharabi/OOP_Ex3.git** or **https://github.com/TalSchreiber95/OOP_Ex3.git**
+* Download project zip file from [Itay's Github Repository](https://github.com/ItaySharabi/OOP_Ex3.git) or [Tal's Github Repository](https://github.com/TalSchreiber95/OOP_Ex3.git)
 
 ### Manually:
 
